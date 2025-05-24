@@ -8,6 +8,20 @@ on:
   pull_request:
 
 jobs:
+  check-diff:
+    name: Check diff
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
+      - id: files
+        uses: jitterbit/get-changed-files@v1
+      - run: |
+          for changed_file in ${{ steps.files.outputs.all }}; do
+            echo "Do something with this ${changed_file}."
+          done
+
   image-matrix:
     name: Check image
     runs-on: ubuntu-latest
