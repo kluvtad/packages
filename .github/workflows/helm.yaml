@@ -1,0 +1,32 @@
+# name: Build and Push  Helm Charts
+
+# on:
+#   push:
+#     branches:
+#       - main
+#   pull_request:
+
+# jobs:
+#   package-and-push-helm:
+#     name: Package and Push Helm Charts
+#     runs-on: ubuntu-latest
+#     needs: build-and-push-docker
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v3
+
+#       - name: Set up Helm
+#         run: |
+#           curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+#       - name: Package and Push Helm Charts
+#         env:
+#           HELM_REPO_URL: ${{ secrets.HELM_REPO_URL }}
+#           HELM_REPO_USERNAME: ${{ secrets.HELM_REPO_USERNAME }}
+#           HELM_REPO_PASSWORD: ${{ secrets.HELM_REPO_PASSWORD }}
+#         run: |
+#           for chart in $(find helm -mindepth 1 -maxdepth 1 -type d); do
+#             helm package $chart
+#             helm cm-push $(basename $chart)-*.tgz $HELM_REPO_URL --username $HELM_REPO_USERNAME --password $HELM_REPO_PASSWORD
+#           done
