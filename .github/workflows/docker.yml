@@ -28,7 +28,7 @@ jobs:
       - name: Setup env
         run: |
           export SHORT_SHA=$(git rev-parse --short ${{ github.sha }})
-          echo "IMAGE_NAME=ghcr.io/${{ github.repository }}:${{ matrix.image }}-${{ github.ref_name }}-${SHORT_SHA}" >> $GITHUB_ENV
+          echo "IMAGE_NAME=ghcr.io/${{ github.repository }}/${{ matrix.image }}:${{ github.ref_name }}-${SHORT_SHA}" >> $GITHUB_ENV
 
       - name: Build Docker Image
         run:
