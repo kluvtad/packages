@@ -16,10 +16,14 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
     - id: set-image-matrix
+      name: Set Image Matrix
       run: |
         LS_IMAGE=$(ls ./docker)
         export MATRIX='{"ls": ['$(echo $LS_IMAGE | tr -d '\n' | jq -R -s -c 'split(" ") | map(select(length > 0)) | map(@json) | join(",")')']}'
         echo "matrix={\"include\":$(echo $MATRIX)}" >> $GITHUB_OUTPUT
+    - name: Debug Matrix
+      run: |
+        echo "Matrix: ${{ steps.set-image-matrix.outputs.matrix }}"
 
   build-and-push-docker:
     name: Build and Push Docker Images
