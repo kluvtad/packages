@@ -11,7 +11,7 @@ jobs:
   image-matrix:
     runs-on: ubuntu-latest
     outputs:
-      images: ${{ steps.set-image-matrix.outputs.matrix }}
+      images: ${{ steps.set-image-matrix.outputs.images }}
     steps:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
@@ -19,7 +19,7 @@ jobs:
       name: Set Image Matrix
       run: |
         LS_IMAGE=$(ls ./docker)
-        echo "images=['$(echo $LS_IMAGE | tr -d '\n' | jq -R -s -c 'split(" ") | map(select(length > 0)) | map(@json) | join(",")')']" >> $GITHUB_OUTPUT
+        echo "images=[$(echo $LS_IMAGE | tr -d '\n' | jq -R -s -c 'split(" ") | map(select(length > 0)) | map(@json) | join(",")')]" >> $GITHUB_OUTPUT
     - name: Debug Matrix
       run: |
         echo "Matrix: ${{ steps.set-image-matrix.outputs.images }}"
