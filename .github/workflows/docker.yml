@@ -8,12 +8,24 @@ on:
   pull_request:
 
 jobs:
+  image-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-image-matrix.outputs.matrix }}
+    steps:
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+    - id: set-image-matrix
+      run: |
+        LS_IMAGE=$(ls ./docker)
+        export MATRIX='{"ls": ['$(echo $LS_IMAGE | tr -d '\n' | jq -R -s -c 'split(" ") | map(select(length > 0)) | map(@json) | join(",")')']}'
+        echo "matrix={\"include\":$(echo $MATRIX)}" >> $GITHUB_OUTPUT
+
   build-and-push-docker:
     name: Build and Push Docker Images
     runs-on: ubuntu-latest
     strategy:
-      matrix:
-        image: [helloworld]
+      matrix: ${{fromJson(needs.image-matrix.outputs.matrix)}}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -28,14 +40,15 @@ jobs:
       - name: Setup env
         run: |
           export SHORT_SHA=$(git rev-parse --short ${{ github.sha }})
-          echo "IMAGE_NAME=ghcr.io/${{ github.repository }}/${{ matrix.image }}:${{ github.ref_name }}-${SHORT_SHA}" >> $GITHUB_ENV
+          echo "IMAGE_NAME=ghcr.io/${{ github.repository }}/docker/${{ matrix.image }}" >> $GITHUB_ENV
+          echo "IMAGE_TAG=${{ github.ref_name }}-${SHORT_SHA}" >> $GITHUB_ENV
 
       - name: Build Docker Image
         run:
-          docker build -t ${{ env.IMAGE_NAME }} ./docker/${{ matrix.image }}
+          docker build -t ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} ./docker/${{ matrix.image }}
 
       # Push the Docker image to the registry
       - name: Push Docker Image
         run: |
-          docker push ${{ env.IMAGE_NAME }}
+          docker push ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
  
