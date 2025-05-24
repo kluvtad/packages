@@ -11,7 +11,7 @@ jobs:
   image-matrix:
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.set-image-matrix.outputs.matrix }}
+      images: ${{ steps.set-image-matrix.outputs.matrix }}
     steps:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
@@ -19,18 +19,18 @@ jobs:
       name: Set Image Matrix
       run: |
         LS_IMAGE=$(ls ./docker)
-        export MATRIX='{"ls": ['$(echo $LS_IMAGE | tr -d '\n' | jq -R -s -c 'split(" ") | map(select(length > 0)) | map(@json) | join(",")')']}'
-        echo "matrix={\"include\":$(echo $MATRIX)}" >> $GITHUB_OUTPUT
+        echo "images=['$(echo $LS_IMAGE | tr -d '\n' | jq -R -s -c 'split(" ") | map(select(length > 0)) | map(@json) | join(",")')']" >> $GITHUB_OUTPUT
     - name: Debug Matrix
       run: |
-        echo "Matrix: ${{ steps.set-image-matrix.outputs.matrix }}"
+        echo "Matrix: ${{ steps.set-image-matrix.outputs.images }}"
 
   build-and-push-docker:
     name: Build and Push Docker Images
     runs-on: ubuntu-latest
     needs: image-matrix
     strategy:
-      matrix: ${{fromJson(needs.image-matrix.outputs.matrix)}}
+      matrix: 
+        image: ${{fromJson(needs.image-matrix.outputs.images)}}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
