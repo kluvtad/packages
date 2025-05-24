@@ -24,6 +24,7 @@ jobs:
   build-and-push-docker:
     name: Build and Push Docker Images
     runs-on: ubuntu-latest
+    needs: image-matrix
     strategy:
       matrix: ${{fromJson(needs.image-matrix.outputs.matrix)}}
     steps:
