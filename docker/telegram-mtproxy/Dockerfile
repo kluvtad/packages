@@ -1,4 +1,4 @@
-FROM alpine:3.21.3 AS build
+FROM debian:12.11 AS build
 
 RUN apt update
 RUN apt install -y git curl build-essential libssl-dev zlib1g-dev
@@ -11,7 +11,7 @@ WORKDIR /src/MTProxy
 RUN sed -i 's/^\(CFLAGS *=.*\)$/\1 -fcommon/' Makefile && sed -i 's/^\(LDFLAGS *=.*\)$/\1 -fcommon/' Makefile
 RUN make
 
-FROM alpine:3.21.3
+FROM debian:12.11
 
 COPY --from=build /src /src
 ENV PATH="/src/MTProxy/objs/bin:$PATH"
