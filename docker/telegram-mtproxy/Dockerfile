@@ -19,6 +19,6 @@ WORKDIR /
 ENTRYPOINT [ "mtproto-proxy" ]
 CMD [ "--port", "443", "--slaves", "1", \
     "--user", "${ACCESS_KEY}", \
-    "--secret", "${SECRET_KEY}", \
+    "--mtproto-secret", "${SECRET_KEY}", \
     "--aes-pwd", "/proxy-secret", \
     "/proxy-multi.conf"]
