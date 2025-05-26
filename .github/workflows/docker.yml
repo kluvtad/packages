@@ -28,23 +28,18 @@ jobs:
     env: 
       changed_files: ${{ needs.changed-files.outputs.changed_files }}
     outputs:
-      images: ${{ steps.set-image-matrix.outputs.images }}
+      images: ${{ steps.get-changed-images.outputs.images }}
     steps:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
     - name: Get Changed Images
       id: get-changed-images
       run: |
-        echo ${changed_files} | tr ' ' '\n' | awk -F'/' '/^docker\// {print $2}' | sort -u
-        
-    - id: set-image-matrix
-      name: Set Image Matrix
-      run: |
-        LS_IMAGE=$(ls ./docker)
-        echo "images=$(echo $LS_IMAGE | tr -d '\n' | jq -Rsc 'split(" ")')" >> $GITHUB_OUTPUT
+        changed_images=$(echo ${changed_files} | tr ' ' '\n' | awk -F'/' '/^docker\// {print $2}' | sort -u)
+        echo "images=${changed_images}" >> $GITHUB_OUTPUT
     - name: Debug Matrix
       run: |
-        echo "Matrix: ${{ steps.set-image-matrix.outputs.images }}"
+        echo "Matrix: ${{ steps.get-changed-images.outputs.images }}"
 
   build-and-push-docker:
     name: Docker
