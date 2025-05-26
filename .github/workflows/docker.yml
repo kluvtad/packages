@@ -36,7 +36,7 @@ jobs:
       id: get-changed-images
       run: |
         changed_images=$(echo ${changed_files} | tr ' ' '\n' | awk -F'/' '/^docker\// {print $2}' | sort -u)
-        echo "images=${changed_images}" >> $GITHUB_OUTPUT
+        echo "images=$(echo ${changed_images} | tr -d '\n' | jq -Rsc 'split(" ")')" >> $GITHUB_OUTPUT
     - name: Debug Matrix
       run: |
         echo "Matrix: ${{ steps.get-changed-images.outputs.images }}"
