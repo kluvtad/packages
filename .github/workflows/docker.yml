@@ -32,9 +32,11 @@ jobs:
     steps:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
-    - name: check diff 
+    - name: Get Changed Images
+      id: get-changed-images
       run: |
-        echo "${changed_files}"
+        echo ${changed_files} | awk -F'/' '/^docker\// {print $2}' | sort -u
+        
     - id: set-image-matrix
       name: Set Image Matrix
       run: |
