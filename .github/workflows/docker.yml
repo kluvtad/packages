@@ -35,7 +35,7 @@ jobs:
     - name: Get Changed Images
       id: get-changed-images
       run: |
-        echo ${changed_files} | awk -F'/' '/^docker\// {print $2}' | sort -u
+        echo ${changed_files} | tr ' ' '\n' | awk -F'/' '/^docker\// {print $2}' | sort -u
         
     - id: set-image-matrix
       name: Set Image Matrix
