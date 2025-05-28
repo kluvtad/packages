@@ -3,7 +3,8 @@ FROM debian:12.11-slim
 RUN apt update && apt install -y curl && apt clean && rm -rf /var/lib/apt/lists/*
 
 # Install kubectl
-RUN curl -LO "https://dl.k8s.io/release/v1.33.1/bin/linux/amd64/kubectl"
+RUN curl -L "https://dl.k8s.io/release/v1.33.1/bin/linux/amd64/kubectl" -o /usr/bin/kubectl && \
+    chmod +x /usr/bin/kubectl
 
 # Create a user for the GitHub runner
 RUN adduser --home /home/runner --disabled-password --shell /bin/bash --gecos GECOS runner
