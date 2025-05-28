@@ -11,7 +11,7 @@ RUN adduser --home /home/runner --disabled-password --shell /bin/bash --gecos GE
 USER runner
 
 # Setup the GitHub Actions runner
-WORKDIR /app
+WORKDIR /src
 RUN curl -L https://github.com/actions/runner/releases/download/v2.324.0/actions-runner-linux-x64-2.324.0.tar.gz -o actions-runner-linux-x64-2.324.0.tar.gz && \
     echo "e8e24a3477da17040b4d6fa6d34c6ecb9a2879e800aa532518ec21e49e21d7b4  actions-runner-linux-x64-2.324.0.tar.gz" | sha256sum -c
 
@@ -23,6 +23,7 @@ RUN ./bin/installdependencies.sh
 USER runner
 ADD ./entrypoint.sh /entrypoint.sh
 
+WORKDIR /workspace
 ENTRYPOINT [ "/entrypoint.sh" ]
 
 

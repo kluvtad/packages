@@ -9,11 +9,25 @@ for var in RUNNER_URL RUNNER_TOKEN RUNNER_NAME RUNNER_LABELS; do
   fi
 done
 
-./config.sh --url "${RUNNER_URL}" \
-            --token "${RUNNER_TOKEN}" \
-            --name "${RUNNER_NAME}" \
-            --labels "${RUNNER_LABELS}" \
-            --runnergroup "${RUNNER_GROUP:-default}" \
-            --replace
+FORCE_REGISTER=${FORCE_REGISTER:-false}
 
+if [ "${FORCE_REGISTER}" = "true" ] && [ -d "/workspace/runner" ] ; then
+  echo "Force registering the GitHub runner."
+  rm -rf /workspace/runner
+fi
+
+if [ ! -d "/workspace/runner" ]; then
+  echo "Create workspace directory for GitHub runner."
+  cp -r /src /workspace/runner
+
+  cd /workspace/runner
+  ./config.sh --url "${RUNNER_URL}" \
+    --token "${RUNNER_TOKEN}" \
+    --name "${RUNNER_NAME}" \
+    --labels "${RUNNER_LABELS}" \
+    --runnergroup "${RUNNER_GROUP:-default}" \
+    --replace
+fi
+
+cd /workspace/runner
 ./run.sh
