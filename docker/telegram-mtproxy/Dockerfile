@@ -16,7 +16,6 @@ ENV PATH="/src/MTProxy/objs/bin:$PATH"
 WORKDIR /
 RUN curl -s https://core.telegram.org/getProxySecret -o /proxy-secret && curl -s https://core.telegram.org/getProxyConfig -o /proxy-multi.conf 
 
-# ENTRYPOINT [ "mtproto-proxy", "--port", "8443", "--slaves", "1", "--user", "${ACCESS_KEY}", "--mtproto-secret", "${SECRET_KEY}"]
-# CMD [ "--aes-pwd", "/proxy-secret", "/proxy-multi.conf"]
+ADD entrypoint.sh /entrypoint.sh
 
-ENTRYPOINT [ "bash", "-c", "mtproto-proxy --port 8443 --slaves 1 --user ${ACCESS_KEY} --mtproto-secret ${SECRET_KEY} --aes-pwd /proxy-secret /proxy-multi.conf" ]
+ENTRYPOINT [ "/entrypoint.sh" ]
