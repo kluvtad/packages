@@ -7,7 +7,7 @@ RUN curl -L "https://dl.k8s.io/release/v1.33.1/bin/linux/amd64/kubectl" -o /usr/
     chmod +x /usr/bin/kubectl
 
 # Create a user for the GitHub runner
-RUN adduser --home /home/runner --disabled-password --shell /bin/bash --gecos GECOS runner
+RUN adduser --uid 1234 --home /home/runner --disabled-password --shell /bin/bash --gecos GECOS runner
 USER runner
 
 # Setup the GitHub Actions runner
