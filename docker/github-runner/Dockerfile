@@ -2,15 +2,13 @@ FROM debian:12.11-slim
 
 RUN apt update && apt install -y curl && apt clean && rm -rf /var/lib/apt/lists/*
 
+# Install yq
+RUN curl -L "https://github.com/mikefarah/yq/releases/download/v4.45.4/yq_linux_amd64" -o /usr/bin/yq && \
+    chmod +x /usr/bin/yq
+
 # Install kubectl
 RUN curl -L "https://dl.k8s.io/release/v1.33.1/bin/linux/amd64/kubectl" -o /usr/bin/kubectl && \
     chmod +x /usr/bin/kubectl
-
-# Install yq
-RUN add-apt-repository ppa:rmescandon/yq && \
-    apt update && \
-    apt install -y yq && \
-    apt clean && rm -rf /var/lib/apt/lists/*
 
 # Create a user for the GitHub runner
 RUN adduser --uid 1234 --home /home/runner --disabled-password --shell /bin/bash --gecos GECOS runner
