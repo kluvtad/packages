@@ -14,8 +14,7 @@ ENV PATH="/src/MTProxy/objs/bin:$PATH"
 
 # get the secret and config files
 WORKDIR /
-RUN curl -s https://core.telegram.org/getProxySecret -o /proxy-secret && \
-    curl -s https://core.telegram.org/getProxyConfig -o /proxy-multi.conf 
+RUN curl -s https://core.telegram.org/getProxySecret -o /proxy-secret && curl -s https://core.telegram.org/getProxyConfig -o /proxy-multi.conf 
 
 ENTRYPOINT [ "mtproto-proxy" ]
 CMD [ "--port", "443", "--slaves", "1", \

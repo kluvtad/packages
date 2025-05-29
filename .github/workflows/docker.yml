@@ -67,7 +67,7 @@ jobs:
 
       - name: Build Docker Image
         run:
-          docker build -t ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} ./docker/${{ matrix.image }}
+          docker build -t ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} -t ${{ env.IMAGE_NAME }}:latest ./docker/${{ matrix.image }}
 
       # Push the Docker image to the registry
       - name: Push Docker Image
