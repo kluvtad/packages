@@ -6,6 +6,12 @@ RUN apt update && apt install -y curl && apt clean && rm -rf /var/lib/apt/lists/
 RUN curl -L "https://dl.k8s.io/release/v1.33.1/bin/linux/amd64/kubectl" -o /usr/bin/kubectl && \
     chmod +x /usr/bin/kubectl
 
+# Install yq
+RUN add-apt-repository ppa:rmescandon/yq && \
+    apt update && \
+    apt install -y yq && \
+    apt clean && rm -rf /var/lib/apt/lists/*
+
 # Create a user for the GitHub runner
 RUN adduser --uid 1234 --home /home/runner --disabled-password --shell /bin/bash --gecos GECOS runner
 USER runner
