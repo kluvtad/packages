@@ -1,6 +1,6 @@
 FROM debian:12.11-slim
 
-RUN apt update && apt install -y curl && apt clean && rm -rf /var/lib/apt/lists/*
+RUN apt update && apt install -y curl git && apt clean && rm -rf /var/lib/apt/lists/*
 
 # Install yq
 RUN curl -L "https://github.com/mikefarah/yq/releases/download/v4.45.4/yq_linux_amd64" -o /usr/bin/yq && \
