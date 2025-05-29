@@ -10,13 +10,13 @@ RUN curl -L "https://github.com/mikefarah/yq/releases/download/v4.45.4/yq_linux_
 RUN curl -L "https://dl.k8s.io/release/v1.33.1/bin/linux/amd64/kubectl" -o /usr/bin/kubectl && \
     chmod +x /usr/bin/kubectl
 RUN curl -L "https://get.helm.sh/helm-v3.18.1-linux-amd64.tar.gz" | tar xz -C /usr/bin --strip-components=1 linux-amd64/helm && \
-    chmod +x /usr/bin/helm && \
-    helm plugin install https://github.com/databus23/helm-diff
-
+    chmod +x /usr/bin/helm
 
 # Create a user for the GitHub runner
 RUN adduser --uid 1234 --home /home/runner --disabled-password --shell /bin/bash --gecos GECOS runner
 USER runner
+
+RUN helm plugin install https://github.com/databus23/helm-diff
 
 # Setup the GitHub Actions runner
 WORKDIR /src
