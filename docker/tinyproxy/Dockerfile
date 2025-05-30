@@ -7,4 +7,8 @@ RUN curl -L "https://github.com/tinyproxy/tinyproxy/releases/download/1.11.2/tin
     make && make install && \
     rm -rf /tmp/tinyproxy-1.11.2
 
+# Create a user for the GitHub runner
+RUN adduser --home /home/runner --disabled-password --shell /bin/bash --gecos GECOS nonroot
+USER nonroot
+
 WORKDIR /etc/tinyproxy
