@@ -12,3 +12,4 @@ RUN adduser --home /home/runner --disabled-password --shell /bin/bash --gecos GE
 USER nonroot
 
 WORKDIR /etc/tinyproxy
+ENTRYPOINT [ "tinyproxy", "-d", "-c", "/etc/tinyproxy/tinyproxy.conf" ]
