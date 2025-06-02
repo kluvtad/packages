@@ -67,7 +67,8 @@ jobs:
 
       - name: Test list tag
         run: |
-           curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://ghcr.io/v2/${{ env.IMAGE_NAME }}/tags/list
+          curl -H "Authorization: Basic $(echo ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} | base64)" https://ghcr.io/token\?scope\="repository:${{ env.IMAGE_NAME }}:pull" | jq '.token'
+          # curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://ghcr.io/v2/${{ env.IMAGE_NAME }}/tags/list
 
       - name: Build Docker Image
         run:
