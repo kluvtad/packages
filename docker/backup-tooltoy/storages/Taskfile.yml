@@ -1,0 +1,46 @@
+version: '3'
+
+includes:
+  # gcs: ./gcs.taskfile.yml
+  minio: ./minio.taskfile.yml
+
+tasks:
+  upload:
+    # ignore_error: true
+    vars:
+      list_valid_types: "minio"
+      _pretty_list_valid_types:
+        sh: |
+          echo {{ .list_valid_types }} | sed "s/^/\'/; s/ /\', \'/g; s/$/\'/"
+      
+      STORAGE_TYPE: '{{ mustRegexSplit "-" .STORAGE_ENV_FILE 2 | first }}'
+    requires:
+      vars:
+        - STORAGE_ENV_FILE
+    preconditions:
+      - sh: |
+          [[ "{{ .list_valid_types }}" =~ (^|[[:space:]]){{ .STORAGE_TYPE }}($|[[:space:]]) ]]
+        msg: "Invalid value for `STORAGE_TYPE`: '{{ .STORAGE_TYPE }}'. Expected one of: {{ ._pretty_list_valid_types }}."
+    cmds:
+      # - |
+      #   task -t {{ .TASKFILE_DIR }}/{{ .STORAGE_TYPE }}.taskfile.yml \
+      #     DB_TYPE={{ .DB_TYPE }} DB_ALIAS={{ .DB_ALIAS }} ENV_FILE={{ .STORAGE_ENV_FILE }} \
+      #     BACKUP_DIR={{ .BACKUP_DIR }} \
+      #     upload
+      - task: "{{ .STORAGE_TYPE }}:init"
+        vars:
+          ENV_FILE: '{{ .STORAGE_ENV_FILE }}'
+          DB_TYPE: '{{ .DB_TYPE }}'
+          DB_ALIAS: '{{ .DB_ALIAS }}'
+      - task: "{{ .STORAGE_TYPE }}:upload"
+        vars:
+          ENV_FILE: '{{ .STORAGE_ENV_FILE }}'
+          DB_TYPE: '{{ .DB_TYPE }}'
+          DB_ALIAS: '{{ .DB_ALIAS }}'
+          BACKUP_DIR: '{{ .BACKUP_DIR }}'
+      - task: "{{ .STORAGE_TYPE }}:clean"
+        vars:
+          ENV_FILE: '{{ .STORAGE_ENV_FILE }}'
+          DB_TYPE: '{{ .DB_TYPE }}'
+          DB_ALIAS: '{{ .DB_ALIAS }}'
+        

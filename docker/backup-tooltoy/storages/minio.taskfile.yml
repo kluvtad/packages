@@ -1,0 +1,46 @@
+version: '3'
+
+tasks:
+  init:
+    requries:
+      vars: 
+        - ENV_FILE
+        - DB_TYPE
+        - DB_ALIAS
+    dotenv:
+      - /workspace/storage-env-files/{{ .ENV_FILE }}
+    vars: &common_vars
+      S3_MC_ALIAS: 
+        sh: echo {{ .ENV_FILE }} | sed 's/minio-//' | sed 's/.env//'
+      S3_MC_PATH: '{{ .DB_TYPE }}/{{ .DB_ALIAS }}'
+      S3_MC_BUCKET: '${S3_MC_BUCKET}'
+    cmds: 
+      - echo "Set alias '{{ .S3_MC_ALIAS }}' - '${S3_MC_URL}'"
+      - cmd: mc alias set {{ .S3_MC_ALIAS }} ${S3_MC_URL} ${S3_MC_ACCESSKEY} ${S3_MC_SECRETKEY}
+        silent: true
+      - echo "Alias '{{ .S3_MC_ALIAS }}' is ready!"
+
+  upload:
+    requires:
+      vars: 
+        - ENV_FILE
+        - BACKUP_DIR
+        - DB_TYPE
+        - DB_ALIAS
+    dotenv: 
+      - /workspace/storage-env-files/{{ .ENV_FILE }}
+    vars: *common_vars
+    cmds:
+      - mc cp --quiet --recursive {{ .BACKUP_DIR }} {{ .S3_MC_ALIAS }}/{{ .S3_MC_BUCKET }}/{{ .S3_MC_PATH }}
+
+  clean:
+    requries:
+      vars: 
+        - ENV_FILE
+        - DB_TYPE
+        - DB_ALIAS
+    dotenv: 
+      - /workspace/storage-env-files/{{ .ENV_FILE }}
+    vars: *common_vars
+    cmds: 
+      - mc ls {{ .S3_MC_ALIAS }}/{{ .S3_MC_BUCKET }}/{{ .S3_MC_PATH }}/

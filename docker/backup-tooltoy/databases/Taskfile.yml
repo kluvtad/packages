@@ -1,0 +1,7 @@
+version: '3'
+
+includes:
+  postgresql: ./postgresql.taskfile.yml
+  edgedb: ./edgedb.taskfile.yml
+  kvrocks: ./kvrocks.taskfile.yml
+  sealedSecrets: ./sealedSecrets.taskfile.yml

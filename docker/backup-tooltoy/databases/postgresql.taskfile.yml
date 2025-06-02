@@ -1,0 +1,81 @@
+version: '3'
+
+tasks:
+  _notImplemented:
+    internal: true
+    env: &pg_envs
+      PGHOST: "{{ .PGHOST }}"
+      PGPORT: "{{ .PGPORT }}"
+      PGUSER: "{{ .PGUSER }}"
+      PGPASSWORD: "{{ .PGPASSWORD }}"
+  
+  _dump:_db:
+    internal: true
+    requires: 
+      vars:
+        - BACKUP_DIR
+        - PGHOST
+        - PGPORT
+        - PGUSER
+        - PGPASSWORD
+        - PGDATABASE
+    env: *pg_envs
+    cmds: 
+      - pg_dump {{ .PGDATABASE }} | gzip > {{ .BACKUP_DIR }}/{{ .PGDATABASE }}.sql.gz
+  _dump:all:
+    internal: true
+    requires: 
+      vars: 
+        - BACKUP_DIR
+        - PGHOST
+        - PGPORT
+        - PGUSER
+        - PGPASSWORD
+    vars:
+      pg_all_databases:
+        sh: |
+          psql postgres -c "select datname from pg_database" | tail -n +3 | head -n -2 | grep -v template | tr -d "\n"
+    env: *pg_envs
+    cmds: 
+      - pg_dumpall | gzip > {{ .BACKUP_DIR }}/all.sql.gz
+      - for:
+          var: pg_all_databases
+          as: PGDATABASE
+        task: _dump:_db
+        vars:
+          PGDATABASE: '{{ .PGDATABASE }}'
+        ignore_error: true
+  
+  _dump:specific_databases:
+    internal: true
+    requires:
+    cmds:
+      - for:
+          var: CUSTOM_PG_DATABASES
+          as: PGDATABASE
+        task: _dump:_db
+        vars:
+          PGDATABASE: '{{ .PGDATABASE }}'
+        ignore_error: true
+  
+  backup:
+    requires:
+      vars:
+        - BACKUP_DIR
+        - PGHOST
+        - PGPORT
+        - PGUSER
+        - PGPASSWORD
+    vars:
+      PG_DUMP_ALL: '{{ .PG_DUMP_ALL | default "true" }}'
+      CUSTOM_PG_DATABASES: '{{ .CUSTOM_PG_DATABASES | default "" | replace ";" " "}}'
+      
+      dump_type: '{{- if eq .PG_DUMP_ALL "true" -}}all{{- else -}}specific_databases{{- end -}}'
+    preconditions:
+      - sh: '[ "{{ .PG_DUMP_ALL }}" == "true" ] || [ "{{ .PG_DUMP_ALL }}" == "false" ]'
+        msg: "Invalid value for `PG_DUMP_ALL`: '{{ .PG_DUMP_ALL }}'. Expected one of: 'true', 'false'."
+    env: *pg_envs
+    cmds:
+      - task: _dump:{{ .dump_type }}
+        vars:
+          CUSTOM_PG_DATABASES: '{{ .CUSTOM_PG_DATABASES }}'

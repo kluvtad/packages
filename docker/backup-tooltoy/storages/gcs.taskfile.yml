@@ -1,0 +1,41 @@
+# DEPRECATED
+version: '3'
+
+tasks: 
+  _upload_one_bucket:
+    internal: true
+    requires:
+      vars: 
+        - ENV_FILE
+        - BACKUP_DIR
+        - DB_TYPE
+        - DB_HOST
+    dotenv: 
+      - /workspace/storage-env-files/{{ .ENV_FILE }}
+    cmds:
+      - echo ${GCS_DEST_BUCKET}
+      - gcloud auth login --cred-file=$GOOGLE_APPLICATION_CREDENTIALS
+      - gcloud storage cp -r {{ .BACKUP_DIR }}/* ${GCS_DEST_BUCKET}/{{ .DB_TYPE }}/{{ .DB_HOST }}/$( basename {{ .BACKUP_DIR }})/
+  upload:
+    requires:
+      vars: 
+        - BACKUP_DIR
+        - DB_TYPE
+        - DB_HOST
+    preconditions:
+      - sh: "[ -d {{ .BACKUP_DIR }} ]"
+      - sh: ls /workspace/storage-env-files | grep -E "^gcs-"
+        msg: "Not found any gcs storages"
+    vars: 
+      GCS_ENV_FILES:
+        sh: ls /workspace/storage-env-files | grep -E "^gcs-"
+    cmds: 
+      - for: 
+          var: GCS_ENV_FILES
+          as: ENV_FILE
+        task: _upload_one_bucket
+        vars: 
+          ENV_FILE: "{{ .ENV_FILE }}"
+          BACKUP_DIR: "{{ .BACKUP_DIR }}"
+          DB_TYPE: "{{ .DB_TYPE }}"
+          DB_HOST: "{{ .DB_HOST }}"
