@@ -1,0 +1,15 @@
+services: 
+  postgresql:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpassword
+      POSTGRES_DB: testdb
+    ports:
+      - "5432:5432"
+  
+  job:
+    build: 
+      context: ..
+      dockerfile: Dockerfile
+    
