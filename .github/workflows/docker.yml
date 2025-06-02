@@ -51,7 +51,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
+    
       - name: Log in to Github Container Registry
         uses: docker/login-action@v2
         with:
@@ -62,15 +62,19 @@ jobs:
       - name: Setup env
         run: |
           export SHORT_SHA=$(git rev-parse --short ${{ github.sha }})
-          echo "IMAGE_NAME=ghcr.io/${{ github.repository }}/docker/${{ matrix.image }}" >> $GITHUB_ENV
+          echo "IMAGE_NAME=${{ github.repository }}/docker/${{ matrix.image }}" >> $GITHUB_ENV
           echo "IMAGE_TAG=${{ github.ref_name }}-${SHORT_SHA}" >> $GITHUB_ENV
+
+      - name: Test list tag
+        run: |
+           curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://ghcr.io/v2/${{ env.IMAGE_NAME }}/tags/list
 
       - name: Build Docker Image
         run:
-          docker build -t ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} -t ${{ env.IMAGE_NAME }}:latest ./docker/${{ matrix.image }}
+          docker build -t ghcr.io/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} -t ghcr.io/${{ env.IMAGE_NAME }}:latest ./docker/${{ matrix.image }}
 
       # Push the Docker image to the registry
       - name: Push Docker Image
         run: |
-          docker push ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          docker push ghcr.io/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
  
