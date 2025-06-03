@@ -1,14 +1,13 @@
 version: '3'
 
 includes:
-  # gcs: ./gcs.taskfile.yml
-  minio: ./minio.taskfile.yml
+  s3: ./s3.taskfile.yml
 
 tasks:
   upload:
     # ignore_error: true
     vars:
-      list_valid_types: "minio"
+      list_valid_types: "s3"
       _pretty_list_valid_types:
         sh: |
           echo {{ .list_valid_types }} | sed "s/^/\'/; s/ /\', \'/g; s/$/\'/"
@@ -22,11 +21,6 @@ tasks:
           [[ "{{ .list_valid_types }}" =~ (^|[[:space:]]){{ .STORAGE_TYPE }}($|[[:space:]]) ]]
         msg: "Invalid value for `STORAGE_TYPE`: '{{ .STORAGE_TYPE }}'. Expected one of: {{ ._pretty_list_valid_types }}."
     cmds:
-      # - |
-      #   task -t {{ .TASKFILE_DIR }}/{{ .STORAGE_TYPE }}.taskfile.yml \
-      #     DB_TYPE={{ .DB_TYPE }} DB_ALIAS={{ .DB_ALIAS }} ENV_FILE={{ .STORAGE_ENV_FILE }} \
-      #     BACKUP_DIR={{ .BACKUP_DIR }} \
-      #     upload
       - task: "{{ .STORAGE_TYPE }}:init"
         vars:
           ENV_FILE: '{{ .STORAGE_ENV_FILE }}'
