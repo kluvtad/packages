@@ -68,17 +68,61 @@ jobs:
       - name: Push Helm Charts to GitHub Container Registry
         run: |
           helm push ./tmp/${{ matrix.chart }}-*.tgz oci://ghcr.io/${{ github.repository }}/helm/${{ matrix.chart }}
-
-  update-index-yaml:
-    name: Update Index YAML
-    runs-on: ubuntu-latest
-    # needs: build-and-push-helm
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Check Helm Index
+        
+      - name: Update Index YAML
         run: |
-          yq -r '.' docs/charts/dev/index.yaml
+          chart_name=${{ matrix.chart }}
+          chart_package=$(ls ./tmp/${chart_name}-*.tgz | head -n 1)
+          index_file="docs/charts/dev/index.yaml"
+
+          # Extract chart metadata
+          chart_version=$(helm show chart "${chart_package}" | yq '.version')
+          chart_appVersion=$(helm show chart "${chart_package}" | yq '.appVersion')
+          chart_description=$(helm show chart "${chart_package}" | yq '.description')
+          chart_digest=$(sha256sum "${chart_package}" | awk '{print $1}')
+          chart_url="oci://ghcr.io/${GITHUB_REPOSITORY}/helm/${chart_name}/${chart_version}"
+
+          # Prepare new entry as YAML
+          new_entry=$(cat <<EOF
+          - apiVersion: v2
+            name: ${chart_name}
+            version: ${chart_version}
+            appVersion: ${chart_appVersion}
+            description: "${chart_description}"
+            digest: "${chart_digest}"
+            urls:
+              - "${chart_url}"
+          EOF
+          )
+
+          # Append or create .entries.${chart_name}
+          if yq e ".entries.${chart_name}" "${index_file}" > /dev/null; then
+            # Append to existing list
+            yq -i ".entries.${chart_name} += [${new_entry}]" "${index_file}"
+          else
+            # Create new list with the entry
+            yq -i ".entries.${chart_name} = [${new_entry}]" "${index_file}"
+          fi
+
+          cat "${index_file}"
+      - name: Commit and Push Index YAML
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "GitHub Action"
+          git add docs/charts/dev/index.yaml
+          git commit -m "Update Helm index.yaml for ${matrix.chart}"
+          git push origin main
+
+  # update-index-yaml:
+  #   name: Update Index YAML
+  #   runs-on: ubuntu-latest
+  #   # needs: build-and-push-helm
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v3
+  #     - name: Check Helm Index
+  #       run: |
+  #         yq -r '.' docs/charts/dev/index.yaml
       # - name: Commit and Push Index YAML
       #   run: |
       #     git config --local user.email "github-actions[bot]@users.noreply.github.com"
