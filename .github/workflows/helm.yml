@@ -69,6 +69,25 @@ jobs:
         run: |
           helm push ./tmp/${{ matrix.chart }}-*.tgz oci://ghcr.io/${{ github.repository }}/helm/${{ matrix.chart }}
 
+  update-index-yaml:
+    name: Update Index YAML
+    runs-on: ubuntu-latest
+    # needs: build-and-push-helm
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Check Helm Index
+        run: |
+          yq -r '.' docs/charts/dev/index.yaml
+      # - name: Commit and Push Index YAML
+      #   run: |
+      #     git config --local user.email "github-actions[bot]@users.noreply.github.com"
+      #     git config --local user.name "GitHub Action"
+      #     git add ./tmp/index.yaml
+      #     git commit -m "Update Helm index.yaml"
+      #     git push origin main
+
+
       # - name: Package Helm Charts
       #   run: helm package charts/
 
