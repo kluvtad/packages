@@ -1,4 +1,4 @@
 # docs
 
-## (charts)[/charts]
-## (charts/index.yaml)[/charts/index.yaml]
+## [charts](/charts)
+## [charts/index.yaml](/charts/index.yaml)
