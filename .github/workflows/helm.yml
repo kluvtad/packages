@@ -1,0 +1,31 @@
+name: Build and Push Helm Charts
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+jobs: 
+  build-and-push-helm:
+    name: Helm Charts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v1
+
+      - name: Lint Helm Charts
+        run: helm --help
+
+      # - name: Package Helm Charts
+      #   run: helm package charts/
+
+      # - name: Push Helm Charts to GitHub Pages
+      #   uses: jakejarvis/gh-pages-deploy@v2.0.0
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     publish_dir: ./charts/
+      #     branch: gh-pages
+      #     commit_message: "Deploy Helm charts"
