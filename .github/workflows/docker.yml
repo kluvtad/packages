@@ -48,6 +48,7 @@ jobs:
     strategy:
       matrix: 
         image: ${{fromJson(needs.image-matrix.outputs.images)}}
+    if: needs.image-matrix.outputs.images != '[]'
     steps:
       - name: Checkout code
         uses: actions/checkout@v3

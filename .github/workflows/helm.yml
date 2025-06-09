@@ -48,6 +48,7 @@ jobs:
     strategy:
       matrix: 
         chart: ${{fromJson(needs.helm-matrix.outputs.charts)}}
+    if: needs.helm-matrix.outputs.charts != '[]'
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
