@@ -67,7 +67,7 @@ jobs:
       
       - name: Push Helm Charts to GitHub Container Registry
         run: |
-          helm push ./tmp/${{ matrix.chart }}-*.tgz oci://ghcr.io/${{ github.repository }}/helm/${{ matrix.chart }}
+          helm push ./tmp/${{ matrix.chart }}-*.tgz oci://ghcr.io/${{ github.repository }}/helm/
         
       - name: Update Index YAML
         run: |
