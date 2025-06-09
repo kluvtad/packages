@@ -1,3 +1,3 @@
 # Charts
 
-[index.yaml](https://kevinlee-gh.github.io/packages/charts/index.yaml)
+[index.yaml](/index.yaml)
