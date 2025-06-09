@@ -82,18 +82,18 @@ jobs:
           chart_digest=$(sha256sum "${chart_package}" | awk '{print $1}')
           chart_url="oci://ghcr.io/${GITHUB_REPOSITORY}/helm/${chart_name}/${chart_version}"
 
-          # Prepare new entry as YAML
-          new_entry=$(cat <<EOF
-          - apiVersion: v2
-            name: ${chart_name}
-            version: ${chart_version}
-            appVersion: ${chart_appVersion}
-            description: "${chart_description}"
-            digest: "${chart_digest}"
-            urls:
-              - "${chart_url}"
-          EOF
-          )
+          # Prepare new entry
+          new_entry="{
+            \"apiVersion\": \"v2\",
+            \"name\": \"${chart_name}\",
+            \"version\": \"${chart_version}\",
+            \"appVersion\": \"${chart_appVersion}\",
+            \"description\": \"${chart_description}\",
+            \"digest\": \"${chart_digest}\",
+            \"urls\": [
+              \"${chart_url}\"
+            ]
+          }"
 
           # Append or create .entries.${chart_name}
           if yq e ".entries.${chart_name}" "${index_file}" > /dev/null; then
