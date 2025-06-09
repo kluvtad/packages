@@ -1,3 +1,4 @@
 # Charts
 
-[index.yaml](/index.yaml)
+[stable](/index.yaml)
+[dev](/dev/index.yaml)
