@@ -11,5 +11,7 @@ RUN curl -L "https://github.com/tinyproxy/tinyproxy/releases/download/1.11.2/tin
 RUN adduser --home /home/runner --disabled-password --shell /bin/bash --gecos GECOS nonroot
 USER nonroot
 
-WORKDIR /etc/tinyproxy
-ENTRYPOINT [ "tinyproxy", "-d", "-c", "/etc/tinyproxy/tinyproxy.conf" ]
+COPY ./entrypoint.sh /entrypoint.sh
+
+WORKDIR /workspace
+ENTRYPOINT [ "/entrypoint.sh" ]
