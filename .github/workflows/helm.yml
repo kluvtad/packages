@@ -79,7 +79,7 @@ jobs:
           echo "chart_appVersion=$(helm show chart helm/${{ matrix.chart }} | yq '.appVersion')" >> $GITHUB_OUTPUT
           echo "chart_description=$(helm show chart helm/${{ matrix.chart }} | yq '.description')" >> $GITHUB_OUTPUT
           echo "chart_url=oci://ghcr.io/${{ github.repository }}/helm/${{ matrix.chart }}/${chart_version}" >> $GITHUB_OUTPUT
-          echo "chart_digest=$(sha256sum "./tmp/${chart_name}-${chart_version}.tgz" | awk '{print $1}')" >> $GITHUB_OUTPUT
+          echo "chart_digest=$(sha256sum "./tmp/${{ matrix.chart }}-${chart_version}.tgz" | awk '{print $1}')" >> $GITHUB_OUTPUT
 
       - name: Push Helm Chart to GitHub Container Registry
         run: |
