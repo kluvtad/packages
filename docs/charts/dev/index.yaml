@@ -9,4 +9,14 @@ entries:
       digest: 5b4a31f51879f12144ba28d7e6e09b399654da860ef39030d174cef5053fa1f3
       urls:
         - oci://ghcr.io/kevinlee-gh/packages/helm/helloworld/0.1.1-dev-15591829613
+    - apiVersion: v2
+      name: helloworld
+      version: 0.1.2-dev-15592038205
+      appVersion: 1.16.0
+      description: A Helm chart for Kubernetes
+      digest: 80df425cec97a83bdaa50d8fb597b06c47385137bfa0c7c3abd5bab7750629a1
+      urls:
+        - oci://ghcr.io/kevinlee-gh/packages/helm/helloworld/0.1.2-dev-15592038205
+      sources:
+        - https://github.com/kevinlee-gh/packages/tree/5629b0d2f2ed528d8ceb008eb6d642498508fba5/helm/helloworld
 generated: "2025-06-09T14:14:48.042030438+07:00"
