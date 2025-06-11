@@ -109,6 +109,9 @@ jobs:
             \"urls\": [
               \"${{ steps.package-chart.outputs.chart_url }}\"
             ]
+            \"sources\": [
+              \"https://github.com/${{ github.repository }}/tree/${{ github.sha }}/helm/${{ matrix.chart }}\"
+            ]
           }"
 
           # Append or create .entries.${chart_name}
