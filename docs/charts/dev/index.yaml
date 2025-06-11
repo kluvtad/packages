@@ -33,4 +33,12 @@ entries:
       digest: ""
       urls:
         - oci://ghcr.io/kevinlee-gh/packages/helm/helloworld/0.1.0
+    - apiVersion: v2
+      name: helloworld
+      version: 0.1.0
+      appVersion: 1.16.0
+      description: A Helm chart for Kubernetes
+      digest: ""
+      urls:
+        - oci://ghcr.io/kevinlee-gh/packages/helm/helloworld/0.1.0
 generated: "2025-06-09T14:14:48.042030438+07:00"
