@@ -65,15 +65,20 @@ jobs:
             exit 1
           fi
 
-          helm package helm/${{ matrix.chart }} --destination ./tmp/
-          
+          chart_version=$(yq '.version' helm/${{ matrix.chart }}/Chart.yaml)
           if [ "${{ github.ref_name }}" == "main" ]; then
             index_file="docs/charts/stable/index.yaml"
           else
             index_file="docs/charts/dev/index.yaml"
+            chart_version="${chart_version}-${{ github.ref_name }}-${{ github.run_id }}"
           fi
-          chart_version=$(helm show chart helm/${{ matrix.chart }} | yq '.version')
+          if [ -n "$(yq '.entries.${{ matrix.chart }}[] | select( .version == "${chart_version}" ) ' ${index_file})" ]; then
+            echo "Chart ${{ matrix.chart }} with version ${chart_version} already exists in ${index_file}!"
+            exit 1
+          fi 
 
+          helm package helm/${{ matrix.chart }} --destination ./tmp/ --version ${chart_version}
+          
           echo "index_file=${index_file}" >> $GITHUB_OUTPUT
           echo "chart_version=${chart_version}" >> $GITHUB_OUTPUT
           echo "chart_appVersion=$(helm show chart helm/${{ matrix.chart }} | yq '.appVersion')" >> $GITHUB_OUTPUT
