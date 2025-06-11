@@ -99,20 +99,20 @@ jobs:
         id: update-index
         run: |
           # Prepare new entry
-          new_entry="{
-            \"apiVersion\": \"v2\",
-            \"name\": \"${{ matrix.chart }}\",
-            \"version\": \"${{ steps.package-chart.outputs.chart_version }}\",
-            \"appVersion\": \"${{ steps.package-chart.outputs.chart_appVersion }}\",
-            \"description\": \"${{ steps.package-chart.outputs.chart_description }}\",
-            \"digest\": \"${{ steps.package-chart.outputs.chart_digest }}\",
-            \"urls\": [
-              \"${{ steps.package-chart.outputs.chart_url }}\"
+          new_entry='{
+            "apiVersion": "v2",
+            "name": "${{ matrix.chart }}",
+            "version": "${{ steps.package-chart.outputs.chart_version }}",
+            "appVersion": "${{ steps.package-chart.outputs.chart_appVersion }}",
+            "description": "${{ steps.package-chart.outputs.chart_description }}",
+            "digest": "${{ steps.package-chart.outputs.chart_digest }}",
+            "urls": [
+              "${{ steps.package-chart.outputs.chart_url }}"
+            ],
+            "sources": [
+              "https://github.com/${{ github.repository }}/tree/${{ github.sha }}/helm/${{ matrix.chart }}"
             ]
-            \"sources\": [
-              \"https://github.com/${{ github.repository }}/tree/${{ github.sha }}/helm/${{ matrix.chart }}\"
-            ]
-          }"
+          }'
 
           # Append or create .entries.${chart_name}
           if yq e ".entries.${{ matrix.chart }}" "${{ steps.package-chart.outputs.index_file }}" > /dev/null; then
