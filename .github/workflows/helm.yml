@@ -53,68 +53,72 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       
-      - name: Lint Helm Charts
-        run: helm --help
-
       - name: Login to GitHub Container Registry
         run: |
           helm registry login ghcr.io --username ${{ github.actor }} --password ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Package Helm Charts
+      - name: Package Helm Chart
+        id: package-chart
         run: |
-          chart_name=${{ matrix.chart }}
+          if [ "$(helm show chart helm/${{ matrix.chart }} | yq '.name')" != "${{ matrix.chart }}" ]; then
+            echo "Chart name mismatch: expected ${{ matrix.chart }}, got $(helm show chart helm/${{ matrix.chart }} | yq '.name')"
+            exit 1
+          fi
+
           helm package helm/${{ matrix.chart }} --destination ./tmp/
-      
-      - name: Push Helm Charts to GitHub Container Registry
-        run: |
-          helm push ./tmp/${{ matrix.chart }}-*.tgz oci://ghcr.io/${{ github.repository }}/helm/
-        
-      - name: Update Index YAML
-        id: update-index
-        run: |
-          chart_name=${{ matrix.chart }}
-          chart_package=$(ls ./tmp/${chart_name}-*.tgz | head -n 1)
+          
           if [ "${{ github.ref_name }}" == "main" ]; then
             index_file="docs/charts/stable/index.yaml"
           else
             index_file="docs/charts/dev/index.yaml"
           fi
+          chart_version=$(helm show chart helm/${{ matrix.chart }} | yq '.version')
 
-          # Extract chart metadata
-          chart_version=$(helm show chart "${chart_package}" | yq '.version')
-          chart_appVersion=$(helm show chart "${chart_package}" | yq '.appVersion')
-          chart_description=$(helm show chart "${chart_package}" | yq '.description')
-          chart_digest=$(sha256sum "${chart_package}" | awk '{print $1}')
-          chart_url="oci://ghcr.io/${GITHUB_REPOSITORY}/helm/${chart_name}/${chart_version}"
+          echo "index_file=${index_file}" >> $GITHUB_OUTPUT
+          echo "chart_version=${chart_version}" >> $GITHUB_OUTPUT
+          echo "chart_appVersion=$(helm show chart helm/${{ matrix.chart }} | yq '.appVersion')" >> $GITHUB_OUTPUT
+          echo "chart_description=$(helm show chart helm/${{ matrix.chart }} | yq '.description')" >> $GITHUB_OUTPUT
+          echo "chart_url=oci://ghcr.io/${{ github.repository }}/helm/${{ matrix.chart }}/${chart_version}" >> $GITHUB_OUTPUT
+          echo "chart_digest=$(sha256sum "./tmp/${chart_name}-${chart_version}.tgz" | awk '{print $1}')" >> $GITHUB_OUTPUT
 
+      - name: Push Helm Chart to GitHub Container Registry
+        run: |
+          helm push ./tmp/${{ matrix.chart }}-${{ steps.package-chart.outputs.chart_version }}.tgz oci://ghcr.io/${{ github.repository }}/helm/
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with: 
+          ref: main
+
+      - name: Update Index YAML
+        id: update-index
+        run: |
           # Prepare new entry
           new_entry="{
             \"apiVersion\": \"v2\",
-            \"name\": \"${chart_name}\",
-            \"version\": \"${chart_version}\",
-            \"appVersion\": \"${chart_appVersion}\",
-            \"description\": \"${chart_description}\",
-            \"digest\": \"${chart_digest}\",
+            \"name\": \"${{ matrix.chart }}\",
+            \"version\": \"${{ steps.package-chart.outputs.chart_version }}\",
+            \"appVersion\": \"${{ steps.package-chart.outputs.chart_appVersion }}\",
+            \"description\": \"${{ steps.package-chart.outputs.chart_description }}\",
+            \"digest\": \"${{ steps.package-chart.outputs.chart_digest }}\",
             \"urls\": [
-              \"${chart_url}\"
+              \"${{ steps.package-chart.outputs.chart_url }}\"
             ]
           }"
 
           # Append or create .entries.${chart_name}
-          if yq e ".entries.${chart_name}" "${index_file}" > /dev/null; then
+          if yq e ".entries.${{ matrix.chart }}" "${{ steps.package-chart.outputs.index_file }}" > /dev/null; then
             # Append to existing list
-            yq -i ".entries.${chart_name} += [${new_entry}]" "${index_file}"
+            yq -i ".entries.${{ matrix.chart }} += [${new_entry}]" "${{ steps.package-chart.outputs.index_file }}"
           else
             # Create new list with the entry
-            yq -i ".entries.${chart_name} = [${new_entry}]" "${index_file}"
+            yq -i ".entries.${{ matrix.chart }} = [${new_entry}]" "${{ steps.package-chart.outputs.index_file }}"
           fi
 
-          cat "${index_file}"
-          echo "index_file=${index_file}" >> $GITHUB_OUTPUT
       - name: Commit and Push Index YAML
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "GitHub Action"
-          git add ${{ steps.update-index.outputs.index_file }}
-          git commit -m "Update Helm index.yaml for ${{ matrix.chart }}"
+          git add ${{ steps.package-chart.outputs.index_file }}
+          git commit -m "Update ${{ steps.package-chart.outputs.index_file }}: ${{ matrix.chart }} - ${{ steps.package-chart.outputs.chart_version }}"
           git push origin main
