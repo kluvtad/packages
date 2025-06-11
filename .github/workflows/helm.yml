@@ -123,6 +123,8 @@ jobs:
             yq -i ".entries.${{ matrix.chart }} = [${new_entry}]" "${{ steps.package-chart.outputs.index_file }}"
           fi
 
+          yq -i '.generated = strftime("%Y-%m-%dT%H:%M:%S.%NZ")' "${{ steps.package-chart.outputs.index_file }}"
+
       - name: Commit and Push Index YAML
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
