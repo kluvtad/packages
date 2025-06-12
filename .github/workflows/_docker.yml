@@ -37,7 +37,7 @@ jobs:
 
       - name: Build Docker Image
         run:
-          docker build -t ghcr.io/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} -t ghcr.io/${{ env.IMAGE_NAME }}:latest ./docker/${{ matrix.image }}
+          docker build -t ghcr.io/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} -t ghcr.io/${{ env.IMAGE_NAME }}:latest ./docker/${{ inputs.image }}
 
       # Push the Docker image to the registry
       - name: Push Docker Image
