@@ -40,4 +40,14 @@ entries:
         - oci://ghcr.io/kevinlee-gh/packages/helm/common/0.1.0-dev-15600268798
       sources:
         - https://github.com/kevinlee-gh/packages/tree/e0937dcaa8238d01d5c00ea4b0376aae3522475d/helm/common
-generated: 2025-06-12T02:37:02Z
+    - apiVersion: v2
+      name: common
+      version: 0.1.0-dev-15600268798
+      appVersion: "null"
+      description: A Helm chart for Kubernetes
+      digest: 21e6c9b4107068152728b40323bb30c5dea219ea1ebebfa7f38a5a12c0677f44
+      urls:
+        - oci://ghcr.io/kevinlee-gh/packages/helm/common/0.1.0-dev-15600268798
+      sources:
+        - https://github.com/kevinlee-gh/packages/tree/e0937dcaa8238d01d5c00ea4b0376aae3522475d/helm/common
+generated: 2025-06-12T02:44:43Z
