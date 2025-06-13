@@ -1,0 +1,19 @@
+name: Cleaner
+
+on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '* 0 * * *'
+
+jobs:
+  cleaner:
+    name: Cleaner
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
+      - name: Run cleaner script
+        run: |
+          # echo "Running cleaner script..."
+          echo Hello, world!
