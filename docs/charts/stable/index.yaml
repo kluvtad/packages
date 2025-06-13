@@ -1,3 +1,14 @@
 apiVersion: v1
-entries: {}
-generated: "2025-06-09T14:11:23.686954318+07:00"
+entries:
+  helloworld:
+    - apiVersion: v2
+      name: helloworld
+      version: 0.1.2
+      appVersion: 1.16.0
+      description: A Helm chart for Kubernetes
+      digest: dc19c68ff7d6c514fff5f1216617230e2d05ecb8e925110fd4b8c27061154d32
+      urls:
+        - oci://ghcr.io/kevinlee-gh/packages/helm/helloworld/0.1.2
+      sources:
+        - https://github.com/kevinlee-gh/packages/tree/aab1ca227f13cc43d47c2082cc6b89a0cf5120c2/helm/helloworld
+generated: 2025-06-13T02:11:23Z
