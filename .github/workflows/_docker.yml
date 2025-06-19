@@ -55,7 +55,7 @@ jobs:
             IMAGE="ghcr.io/${{ env.IMAGE_NAME }}:${tag}"
 
             DOCKER_BUILD_ARGS="${DOCKER_BUILD_ARGS} -t ${IMAGE}"
-            DOCKER_IMAGES="${DOCKER_IMAGES} ${IMAGE}"
+            DOCKER_IMAGES="${DOCKER_IMAGES}|${IMAGE}"
           done
           echo "DOCKER_BUILD_ARGS=${DOCKER_BUILD_ARGS}" >> $GITHUB_ENV
 
@@ -68,7 +68,10 @@ jobs:
       # Push the Docker image to the registry
       - name: Push Docker Image
         run: |
-          docker push ghcr.io/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          for image in $(echo "${{ env.DOCKER_IMAGES }}" | tr '|' '\n'); do
+            echo "Pushing ${image}"
+            docker push ${image}
+          done
 
       - name: Test list tags
         run: |
