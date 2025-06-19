@@ -58,6 +58,7 @@ jobs:
             DOCKER_IMAGES="${DOCKER_IMAGES}|${IMAGE}"
           done
           echo "DOCKER_BUILD_ARGS=${DOCKER_BUILD_ARGS}" >> $GITHUB_ENV
+          echo "DOCKER_IMAGES=${DOCKER_IMAGES}" >> $GITHUB_ENV
 
       - name: Build Docker Image
         run: |
