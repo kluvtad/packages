@@ -9,9 +9,32 @@ on:
         type: string
       
 jobs:
-  build-and-push-docker:
-    name: Docker
+  get-job-env:
+    name: Get Job Environment
     runs-on: ubuntu-latest
+    outputs:
+      env_name: ${{ steps.set-env.outputs.env_name }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set Environment
+        id: set-env
+        run: |
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            echo "env_name=production" >> $GITHUB_OUTPUT
+            echo "env_url=ghcr.io" >> $GITHUB_OUTPUT
+          else
+            echo "env_name=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+            echo "env_url=ghcr.io" >> $GITHUB_OUTPUT
+          fi
+
+  build-and-push:
+    name: Build and Push
+    runs-on: ubuntu-latest
+    environment: 
+      name: ${{ steps.set-env.outputs.env_name }}
+      url: ${{ steps.set-env.outputs.env_url }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
