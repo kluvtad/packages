@@ -32,11 +32,10 @@ jobs:
             echo "VERSION.txt not found in ./docker/${{ inputs.image }}/"
             exit 1
           fi
+          semver=$(cat ./docker/${{ inputs.image }}/VERSION.txt | tr -d '\n')
 
           IMAGE_TAGS=""
           if [[ "${{ github.ref_name }}" == "main" ]]; then
-            
-            semver=$(cat ./docker/${{ inputs.image }}/VERSION.txt | tr -d '\n')
             IMAGE_TAGS="main|${semver}|${semver}-${SHORT_SHA}"
           else
             IMAGE_TAGS="${{ github.ref_name }}|${{ github.ref_name }}-${semver}|${{ github.ref_name }}-${semver}-${SHORT_SHA}"
@@ -50,9 +49,13 @@ jobs:
       - name: Docker Args
         run: |
           DOCKER_BUILD_ARGS=""
+          DOCKER_IMAGES=""
           # Docker Images
           for tag in $(echo "${{ env.IMAGE_TAGS }}" | tr '|' '\n'); do
-            DOCKER_BUILD_ARGS="${DOCKER_BUILD_ARGS} -t ghcr.io/${{ env.IMAGE_NAME }}:${tag}"
+            IMAGE="ghcr.io/${{ env.IMAGE_NAME }}:${tag}"
+
+            DOCKER_BUILD_ARGS="${DOCKER_BUILD_ARGS} -t ${IMAGE}"
+            DOCKER_IMAGES="${DOCKER_IMAGES} ${IMAGE}"
           done
           echo "DOCKER_BUILD_ARGS=${DOCKER_BUILD_ARGS}" >> $GITHUB_ENV
 
@@ -61,7 +64,6 @@ jobs:
           docker build \
             ${{ env.DOCKER_BUILD_ARGS }} \
             ./docker/${{ inputs.image }}
-          exit 1
 
       # Push the Docker image to the registry
       - name: Push Docker Image
