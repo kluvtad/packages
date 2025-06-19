@@ -51,7 +51,7 @@ jobs:
         run: |
           DOCKER_BUILD_ARGS=""
           # Docker Images
-          for tag in $$(echo "${{ env.IMAGE_TAGS }}" | tr '|' '\n'); do
+          for tag in $(echo "${{ env.IMAGE_TAGS }}" | tr '|' '\n'); do
             DOCKER_BUILD_ARGS="${DOCKER_BUILD_ARGS} -t ghcr.io/${{ env.IMAGE_NAME }}:${tag}"
           done
           echo "DOCKER_BUILD_ARGS=${DOCKER_BUILD_ARGS}" >> $GITHUB_ENV
