@@ -51,12 +51,9 @@ jobs:
         run: |
           DOCKER_BUILD_ARGS=""
           # Docker Images
-          IFS='|'
-          for tag in "${{ env.IMAGE_TAGS }}"; do
-            DOCKER_BUILD_ARGS="${DOCKER_BUILD_ARGS} \\
-              -t ghcr.io/${{ env.IMAGE_NAME }}:${tag}"
+          for tag in $$(echo "${{ env.IMAGE_TAGS }}" | tr '|' '\n'); do
+            DOCKER_BUILD_ARGS="${DOCKER_BUILD_ARGS} -t ghcr.io/${{ env.IMAGE_NAME }}:${tag}"
           done
-          unset IFS
           echo "DOCKER_BUILD_ARGS=${DOCKER_BUILD_ARGS}" >> $GITHUB_ENV
 
       - name: Build Docker Image
