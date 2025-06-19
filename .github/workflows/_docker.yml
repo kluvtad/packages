@@ -23,7 +23,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup env
+      - name: Image Name and Tags
         run: |
           export SHORT_SHA=$(git rev-parse --short ${{ github.sha }})
           echo "IMAGE_NAME=${{ github.repository }}/docker/${{ inputs.image }}" >> $GITHUB_ENV
@@ -46,21 +46,25 @@ jobs:
             IMAGE_TAGS="${IMAGE_TAGS}|latest"
           fi
           echo "IMAGE_TAGS=${IMAGE_TAGS}" >> $GITHUB_ENV
+      
+      - name: Docker Args
+        run: |
+          DOCKER_BUILD_ARGS=""
+          # Docker Images
+          IFS='|'
+          for tag in "${{ env.IMAGE_TAGS }}"; do
+            DOCKER_BUILD_ARGS="${DOCKER_BUILD_ARGS} \\
+              -t ghcr.io/${{ env.IMAGE_NAME }}:${tag}"
+          done
+          unset IFS
+          echo "DOCKER_BUILD_ARGS=${DOCKER_BUILD_ARGS}" >> $GITHUB_ENV
 
       - name: Build Docker Image
         run: |
-          echo hihi  ${{ env.IMAGE_TAGS }}
-          echo haha ${IMAGE_TAGS}
-
-          export tmp=huhu-${{ env.IMAGE_TAGS }}-hoho
-          echo huhu ${tmp}
-          echo hoho ${{ env.tmp }}
-
-          exit 1
           docker build \
-            -t ghcr.io/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
-            -t ghcr.io/${{ env.IMAGE_NAME }}:latest \
+            ${{ env.DOCKER_BUILD_ARGS }} \
             ./docker/${{ inputs.image }}
+          exit 1
 
       # Push the Docker image to the registry
       - name: Push Docker Image
