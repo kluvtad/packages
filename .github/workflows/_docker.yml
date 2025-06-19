@@ -27,20 +27,48 @@ jobs:
         run: |
           export SHORT_SHA=$(git rev-parse --short ${{ github.sha }})
           echo "IMAGE_NAME=${{ github.repository }}/docker/${{ inputs.image }}" >> $GITHUB_ENV
-          echo "IMAGE_TAG=${{ github.ref_name }}-${SHORT_SHA}" >> $GITHUB_ENV
 
-      - name: Test list tag
-        run: |
-          token=$(curl -H "Authorization: Basic $(echo ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} | base64)" https://ghcr.io/token\?scope\="repository:${{ env.IMAGE_NAME }}:pull" | jq '.token')
-          LS_TAGS=$(curl -H "Authorization: Bearer $token" https://ghcr.io/v2/${{ env.IMAGE_NAME }}/tags/list | jq '.tags')
-          echo "Existing tags: $LS_TAGS"
+          if ! [[ -f ./docker/${{ inputs.image }}/VERSION.txt ]]; then
+            echo "VERSION.txt not found in ./docker/${{ inputs.image }}/"
+            exit 1
+          fi
+
+          IMAGE_TAGS=""
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            
+            semver=$(cat ./docker/${{ inputs.image }}/VERSION.txt | tr -d '\n')
+            IMAGE_TAGS="main|${semver}|${semver}-${SHORT_SHA}"
+          else
+            IMAGE_TAGS="${{ github.ref_name }}|${{ github.ref_name }}-${semver}|${{ github.ref_name }}-${semver}-${SHORT_SHA}"
+          fi
+
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            IMAGE_TAGS="${IMAGE_TAGS}|latest"
+          fi
+          echo "IMAGE_TAGS=${IMAGE_TAGS}" >> $GITHUB_ENV
 
       - name: Build Docker Image
-        run:
-          docker build -t ghcr.io/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} -t ghcr.io/${{ env.IMAGE_NAME }}:latest ./docker/${{ inputs.image }}
+        run: |
+          echo hihi  ${{ env.IMAGE_TAGS }}
+          echo haha ${IMAGE_TAGS}
+
+          export tmp=huhu-${{ env.IMAGE_TAGS }}-hoho
+          echo huhu ${tmp}
+          echo hoho ${{ env.tmp }}
+
+          exit 1
+          docker build \
+            -t ghcr.io/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
+            -t ghcr.io/${{ env.IMAGE_NAME }}:latest \
+            ./docker/${{ inputs.image }}
 
       # Push the Docker image to the registry
       - name: Push Docker Image
         run: |
           docker push ghcr.io/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
- 
+
+      - name: Test list tags
+        run: |
+          token=$(curl -H "Authorization: Basic $(echo ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} | base64)" https://ghcr.io/token\?scope\="repository:${{ env.IMAGE_NAME }}:pull" | jq '.token')
+          LS_TAGS=$(curl -H "Authorization: Bearer $token" https://ghcr.io/v2/${{ env.IMAGE_NAME }}/tags/list | jq '.tags')
+          echo "Existing tags: $LS_TAGS"
