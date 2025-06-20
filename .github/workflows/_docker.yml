@@ -31,8 +31,7 @@ jobs:
     name: Build and Push
     runs-on: ubuntu-latest
     needs: get-job-env
-    environment: 
-      name: ${{ needs.get-job-env.outputs.env_name }}
+    environment: ${{ needs.get-job-env.outputs.env_name }}
     env:
       env_name: ${{ needs.get-job-env.outputs.env_name }}
     steps:
@@ -44,7 +43,7 @@ jobs:
         run: |
           if [[ "${{ env.env_name }}" == "production" ]]; then
             # Docker Hub
-            echo "docker_registry=" >> $GITHUB_OUTPUT
+            echo "docker_registry=registry.hub.docker.com" >> $GITHUB_OUTPUT
             echo "docker_username=${{ secrets.DOCKER_HUB_USERNAME }}" >> $GITHUB_OUTPUT
             echo "docker_password=${{ secrets.DOCKER_HUB_PASSWORD }}" >> $GITHUB_OUTPUT
           else
