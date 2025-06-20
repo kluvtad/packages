@@ -92,13 +92,13 @@ jobs:
 
           IMAGE_TAGS=""
           if [[ "${{ env.env_name }}" == "production" ]]; then
-            IMAGE_TAGS="type=raw,value=main"
             IMAGE_TAGS="${IMAGE_TAGS}\ntype=raw,value=${SEMVER}"
             IMAGE_TAGS="${IMAGE_TAGS}\ntype=raw,value=${SEMVER}-${SHORT_SHA}"
+            IMAGE_TAGS="type=raw,value=main"
           else
-            IMAGE_TAGS="type=raw,value=${{ github.ref_name }}"
             IMAGE_TAGS="${IMAGE_TAGS}\ntype=raw,value=${{ github.ref_name }}-${SEMVER}"
             IMAGE_TAGS="${IMAGE_TAGS}\ntype=raw,value=${{ github.ref_name }}-${SEMVER}-${SHORT_SHA}"
+            IMAGE_TAGS="type=raw,value=${{ github.ref_name }}"
           fi
 
           if [[ "${{ env.env_name }}" == "production" ]]; then
