@@ -50,6 +50,7 @@ jobs:
     uses: ./.github/workflows/_docker.yml
     with:
       image: '${{ matrix.image }}'
+    secrets:
       DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
       DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
   
