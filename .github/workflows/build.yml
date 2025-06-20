@@ -50,8 +50,9 @@ jobs:
     uses: ./.github/workflows/_docker.yml
     with:
       image: '${{ matrix.image }}'
+      DOCKER_HUB_USERNAME: kluvtad
+      DOCKER_HUB_BASE_PATH: kluvtad
     secrets:
-      DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
       DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
   
   check-changed-charts:

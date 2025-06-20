@@ -7,10 +7,15 @@ on:
         description: 'The name of the Docker image to build and push'
         required: true
         type: string
-    secrets:
+      DOCKER_HUB_BASE_PATH:
+        description: 'Docker Hub base path'
+        required: true
+        type: string
       DOCKER_HUB_USERNAME:
         description: 'Docker Hub username'
-        required: false
+        required: true
+        type: string
+    secrets:
       DOCKER_HUB_PASSWORD:
         description: 'Docker Hub password'
         required: false
@@ -51,8 +56,8 @@ jobs:
           if [[ "${{ env.env_name }}" == "production" ]]; then
             # Docker Hub
             echo "docker_registry=" >> $GITHUB_OUTPUT
-            echo "docker_base_path=kluvtad" >> $GITHUB_OUTPUT
-            echo "docker_username=${{ secrets.DOCKER_HUB_USERNAME }}" >> $GITHUB_OUTPUT
+            echo "docker_base_path=${{ inputs.DOCKER_HUB_BASE_PATH }}" >> $GITHUB_OUTPUT
+            echo "docker_username=${{ inputs.DOCKER_HUB_USERNAME }}" >> $GITHUB_OUTPUT
             echo "docker_password=${{ secrets.DOCKER_HUB_PASSWORD }}" >> $GITHUB_OUTPUT
           else
             echo "docker_registry=ghcr.io/" >> $GITHUB_OUTPUT
