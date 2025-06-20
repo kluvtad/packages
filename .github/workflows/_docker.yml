@@ -23,10 +23,8 @@ jobs:
         run: |
           if [[ "${{ github.ref_name }}" == "main" ]]; then
             echo "env_name=production" >> $GITHUB_OUTPUT
-            echo "env_url=ghcr.io" >> $GITHUB_OUTPUT
           else
             echo "env_name=${{ github.ref_name }}" >> $GITHUB_OUTPUT
-            echo "env_url=ghcr.io" >> $GITHUB_OUTPUT
           fi
 
   build-and-push:
@@ -35,22 +33,37 @@ jobs:
     needs: get-job-env
     environment: 
       name: ${{ needs.get-job-env.outputs.env_name }}
-      url: ${{ needs.get-job-env.outputs.env_url }}
+    env:
+      env_name: ${{ needs.get-job-env.outputs.env_name }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+      
+      - name: Get Docker Registry Info
+        id: get-docker-registry
+        run: |
+          if [[ "${{ env.env_name }}" == "production" ]]; then
+            # Docker Hub
+            echo "docker_registry=" >> $GITHUB_OUTPUT
+            echo "docker_username=${{ secrets.DOCKER_HUB_USERNAME }}" >> $GITHUB_OUTPUT
+            echo "docker_password=${{ secrets.DOCKER_HUB_PASSWORD }}" >> $GITHUB_OUTPUT
+          else
+            echo "docker_registry=ghcr.io/${{ github.repository }}/docker" >> $GITHUB_OUTPUT
+            echo "docker_username=${{ github.actor }}" >> $GITHUB_OUTPUT
+            echo "docker_password=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_OUTPUT
+          fi
     
       - name: Log in to Github Container Registry
         uses: docker/login-action@v2
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ${{ steps.get-docker-registry.outputs.docker_registry }}
+          username: ${{ steps.get-docker-registry.outputs.docker_username }}
+          password: ${{ steps.get-docker-registry.outputs.docker_password }}
 
       - name: Image Name and Tags
         run: |
           export SHORT_SHA=$(git rev-parse --short ${{ github.sha }})
-          echo "IMAGE_NAME=${{ github.repository }}/docker/${{ inputs.image }}" >> $GITHUB_ENV
+          echo "IMAGE_NAME=${{ steps.get-docker-registry.outputs.docker_registry }}/${{ inputs.image }}" >> $GITHUB_ENV
 
           if ! [[ -f ./docker/${{ inputs.image }}/VERSION.txt ]]; then
             echo "VERSION.txt not found in ./docker/${{ inputs.image }}/"
@@ -59,13 +72,13 @@ jobs:
           semver=$(cat ./docker/${{ inputs.image }}/VERSION.txt | tr -d '\n')
 
           IMAGE_TAGS=""
-          if [[ "${{ github.ref_name }}" == "main" ]]; then
+          if [[ "${{ env.env_name }}" == "production" ]]; then
             IMAGE_TAGS="main|${semver}|${semver}-${SHORT_SHA}"
           else
             IMAGE_TAGS="${{ github.ref_name }}|${{ github.ref_name }}-${semver}|${{ github.ref_name }}-${semver}-${SHORT_SHA}"
           fi
 
-          if [[ "${{ github.ref_name }}" == "main" ]]; then
+          if [[ "${{ env.env_name }}" == "production" ]]; then
             IMAGE_TAGS="${IMAGE_TAGS}|latest"
           fi
           echo "IMAGE_TAGS=${IMAGE_TAGS}" >> $GITHUB_ENV
@@ -76,7 +89,7 @@ jobs:
           DOCKER_IMAGES=""
           # Docker Images
           for tag in $(echo "${{ env.IMAGE_TAGS }}" | tr '|' '\n'); do
-            IMAGE="ghcr.io/${{ env.IMAGE_NAME }}:${tag}"
+            IMAGE="${{ env.IMAGE_NAME }}:${tag}"
 
             DOCKER_BUILD_ARGS="${DOCKER_BUILD_ARGS} -t ${IMAGE}"
             DOCKER_IMAGES="${DOCKER_IMAGES}|${IMAGE}"
@@ -97,9 +110,3 @@ jobs:
             echo "Pushing ${image}"
             docker push ${image}
           done
-
-      - name: Test list tags
-        run: |
-          token=$(curl -H "Authorization: Basic $(echo ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} | base64)" https://ghcr.io/token\?scope\="repository:${{ env.IMAGE_NAME }}:pull" | jq '.token')
-          LS_TAGS=$(curl -H "Authorization: Bearer $token" https://ghcr.io/v2/${{ env.IMAGE_NAME }}/tags/list | jq '.tags')
-          echo "Existing tags: $LS_TAGS"
