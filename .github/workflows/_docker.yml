@@ -110,14 +110,12 @@ jobs:
           
           echo "image_name=${{ steps.get-docker-registry.outputs.docker_registry }}${{ steps.get-docker-registry.outputs.docker_base_path }}/${{ inputs.image }}" >> $GITHUB_OUTPUT
       
-      - name: Docker meta
+      - name: Docker Metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          # list of Docker images to use as base name for tags
           images: |
             ${{ steps.image-name-and-tags.outputs.image_name }}
-          # generate Docker tags based on the following events/attributes
           tags: |
             ${{ steps.image-name-and-tags.outputs.image_tags }}
 
@@ -128,31 +126,3 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
-      # - name: Docker Args
-      #   run: |
-      #     DOCKER_BUILD_ARGS=""
-      #     DOCKER_IMAGES=""
-      #     # Docker Images
-      #     for tag in $(echo "${{ env.IMAGE_TAGS }}" | tr '|' '\n'); do
-      #       IMAGE="${{ env.IMAGE_NAME }}:${tag}"
-
-      #       DOCKER_BUILD_ARGS="${DOCKER_BUILD_ARGS} -t ${IMAGE}"
-      #       DOCKER_IMAGES="${DOCKER_IMAGES}|${IMAGE}"
-      #     done
-      #     echo "DOCKER_BUILD_ARGS=${DOCKER_BUILD_ARGS}" >> $GITHUB_ENV
-      #     echo "DOCKER_IMAGES=${DOCKER_IMAGES}" >> $GITHUB_ENV
-
-      # - name: Build Docker Image
-      #   run: |
-      #     docker build \
-      #       ${{ env.DOCKER_BUILD_ARGS }} \
-      #       ./docker/${{ inputs.image }}
-
-      # # Push the Docker image to the registry
-      # - name: Push Docker Image
-      #   run: |
-      #     for image in $(echo "${{ env.DOCKER_IMAGES }}" | tr '|' '\n'); do
-      #       echo "Pushing ${image}"
-      #       docker push ${image}
-      #     done
