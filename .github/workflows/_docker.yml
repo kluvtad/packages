@@ -7,7 +7,14 @@ on:
         description: 'The name of the Docker image to build and push'
         required: true
         type: string
-      
+    secrets:
+      DOCKER_HUB_USERNAME:
+        description: 'Docker Hub username'
+        required: false
+      DOCKER_HUB_PASSWORD:
+        description: 'Docker Hub password'
+        required: false
+
 jobs:
   get-job-env:
     name: Get Job Environment
