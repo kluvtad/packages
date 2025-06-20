@@ -43,7 +43,10 @@ jobs:
         id: get-docker-registry
         run: |
           if [[ "${{ env.env_name }}" == "production" ]]; then
-            echo "docker_registry=ghcr.io" >> $GITHUB_OUTPUT
+            # Docker Hub
+            echo "docker_registry=" >> $GITHUB_OUTPUT
+            echo "docker_username=${{ secrets.DOCKER_HUB_USERNAME }}" >> $GITHUB_OUTPUT
+            echo "docker_password=${{ secrets.DOCKER_HUB_PASSWORD }}" >> $GITHUB_OUTPUT
           else
             echo "docker_registry=ghcr.io/${{ github.repository }}/docker" >> $GITHUB_OUTPUT
             echo "docker_username=${{ github.actor }}" >> $GITHUB_OUTPUT
