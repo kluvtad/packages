@@ -14,9 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       env_name: ${{ steps.set-env.outputs.env_name }}
-      docker_registry: ${{ steps.set-env.outputs.docker_registry }}
-      docker_username: ${{ steps.set-env.outputs.docker_username }}
-      docker_password: ${{ steps.set-env.outputs.docker_password }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -36,6 +33,8 @@ jobs:
     needs: get-job-env
     environment: 
       name: ${{ needs.get-job-env.outputs.env_name }}
+    env:
+      env_name: ${{ needs.get-job-env.outputs.env_name }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -43,7 +42,7 @@ jobs:
       - name: Get Docker Registry Info
         id: get-docker-registry
         run: |
-          if [[ "${{ environment.name }}" == "production" ]]; then
+          if [[ "${{ env.env_name }}" == "production" ]]; then
             echo "docker_registry=ghcr.io" >> $GITHUB_OUTPUT
           else
             echo "docker_registry=${{ github.repository }}/docker" >> $GITHUB_OUTPUT
@@ -70,13 +69,13 @@ jobs:
           semver=$(cat ./docker/${{ inputs.image }}/VERSION.txt | tr -d '\n')
 
           IMAGE_TAGS=""
-          if [[ "${{ environment.name }}" == "production" ]]; then
+          if [[ "${{ env.env_name }}" == "production" ]]; then
             IMAGE_TAGS="main|${semver}|${semver}-${SHORT_SHA}"
           else
             IMAGE_TAGS="${{ github.ref_name }}|${{ github.ref_name }}-${semver}|${{ github.ref_name }}-${semver}-${SHORT_SHA}"
           fi
 
-          if [[ "${{ environment.name }}" == "production" ]]; then
+          if [[ "${{ env.env_name }}" == "production" ]]; then
             IMAGE_TAGS="${IMAGE_TAGS}|latest"
           fi
           echo "IMAGE_TAGS=${IMAGE_TAGS}" >> $GITHUB_ENV
