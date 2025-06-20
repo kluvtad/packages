@@ -104,7 +104,9 @@ jobs:
           if [[ "${{ env.env_name }}" == "production" ]]; then
             IMAGE_TAGS="${IMAGE_TAGS}\ntype=raw,value=latest"
           fi
-          echo -e "image_tags='${IMAGE_TAGS}'" >> $GITHUB_OUTPUT
+          echo "image_tags<<EOF" >> $GITHUB_OUTPUT
+          echo -e "${IMAGE_TAGS}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
           
           echo "image_name=${{ steps.get-docker-registry.outputs.docker_registry }}${{ steps.get-docker-registry.outputs.docker_base_path }}/${{ inputs.image }}" >> $GITHUB_OUTPUT
       
