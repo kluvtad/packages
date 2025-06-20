@@ -45,7 +45,7 @@ jobs:
           if [[ "${{ env.env_name }}" == "production" ]]; then
             echo "docker_registry=ghcr.io" >> $GITHUB_OUTPUT
           else
-            echo "docker_registry=${{ github.repository }}/docker" >> $GITHUB_OUTPUT
+            echo "docker_registry=ghcr.io/${{ github.repository }}/docker" >> $GITHUB_OUTPUT
             echo "docker_username=${{ github.actor }}" >> $GITHUB_OUTPUT
             echo "docker_password=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_OUTPUT
           fi
