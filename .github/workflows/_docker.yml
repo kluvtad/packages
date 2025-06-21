@@ -118,7 +118,7 @@ jobs:
           git config --global user.email "action@github.com"
           
           tag="docker/${{ inputs.image }}/v${{ steps.image-name-and-tags.outputs.image_semver }}"
-          git tag -a "${tag}" -m "Release Image ${{ inputs.image }} - v${{ steps.image-name-and-tags.outputs.image_semver }}"
+          git tag -a "${tag}" -m "Release Image '${{ inputs.image }}' - v${{ steps.image-name-and-tags.outputs.image_semver }}"
           git push origin "${tag}"
         
       - name: Docker Metadata
