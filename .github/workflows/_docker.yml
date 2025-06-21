@@ -115,7 +115,7 @@ jobs:
         if: ${{ env.env_name == 'production' }}
         run: |
           git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]"
+          git config --global user.email "action@github.com"
           
           tag="docker/${{ inputs.image }}/v${{ steps.image-name-and-tags.outputs.image_semver }}"
           git tag -a "${tag}" -m "Release Image ${{ inputs.image }} - v${{ steps.image-name-and-tags.outputs.image_semver }}"
