@@ -109,7 +109,17 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
           
           echo "image_name=${{ steps.get-docker-registry.outputs.docker_registry }}${{ steps.get-docker-registry.outputs.docker_base_path }}/${{ inputs.image }}" >> $GITHUB_OUTPUT
+          echo "image_semver=${SEMVER}" >> $GITHUB_OUTPUT
       
+      - name: Release Production Tag
+        if: ${{ env.env_name == 'production' }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          
+          tag="docker/${{ inputs.image }}/v${{ steps.image-name-and-tags.outputs.image_semver }}"
+          git tag -a "${tag}" -m "Release Image ${{ inputs.image }} - v${{ steps.image-name-and-tags.outputs.image_semver }}"
+          git push origin "${tag}"
+        
       - name: Docker Metadata
         id: meta
         uses: docker/metadata-action@v5
