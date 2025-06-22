@@ -87,3 +87,7 @@ jobs:
     uses: ./.github/workflows/_helm.yml
     with:
       chart: '${{ matrix.chart }}'
+      DOCKER_HUB_USERNAME: kluvtad
+      DOCKER_HUB_BASE_PATH: kluvtad
+    secrets:
+      DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}

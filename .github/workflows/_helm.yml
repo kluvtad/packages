@@ -7,21 +7,70 @@ on:
         description: 'The name of the Helm chart to build and push'
         required: true
         type: string
+      DOCKER_HUB_BASE_PATH:
+        description: 'Docker Hub base path'
+        required: true
+        type: string
+      DOCKER_HUB_USERNAME:
+        description: 'Docker Hub username'
+        required: true
+        type: string
+    secrets:
+      DOCKER_HUB_PASSWORD:
+        description: 'Docker Hub password'
+        required: false
 
 jobs: 
-  build-and-push-helm:
-    name: Helm Charts
+  get-job-env:
+    name: Get Job Environment
     runs-on: ubuntu-latest
+    outputs:
+      env_name: ${{ steps.set-env.outputs.env_name }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
       
+      - name: Set Environment
+        id: set-env
+        run: |
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            echo "env_name=production" >> $GITHUB_OUTPUT
+          else
+            echo "env_name=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
+
+  build-and-push:
+    name: Build and Push
+    runs-on: ubuntu-latest
+    needs: get-job-env
+    environment: ${{ needs.get-job-env.outputs.env_name }}
+    env:
+      env_name: ${{ needs.get-job-env.outputs.env_name }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: get Registry Info
+        id: get-registry-info
+        run: |
+          if [[ "${{ env.env_name }}" == "production" ]]; then
+            echo "registry=registry-1.docker.io/" >> $GITHUB_OUTPUT
+            echo "registry_base_path=${{ inputs.DOCKER_HUB_BASE_PATH }}" >> $GITHUB_OUTPUT
+            echo "registry_username=${{ inputs.DOCKER_HUB_USERNAME }}" >> $GITHUB_OUTPUT
+            echo "registry_password=${{ secrets.DOCKER_HUB_PASSWORD }}" >> $GITHUB_OUTPUT
+          else
+            echo "registry=ghcr.io/" >> $GITHUB_OUTPUT
+            echo "registry_base_path=${{ github.repository }}/helm" >> $GITHUB_OUTPUT
+            echo "registry_username=${{ github.actor }}" >> $GITHUB_OUTPUT
+            echo "registry_password=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_OUTPUT
+          fi
+        
       - name: Login to GitHub Container Registry
         run: |
-          helm registry login ghcr.io --username ${{ github.actor }} --password ${{ secrets.GITHUB_TOKEN }}
+          helm registry login ${{ steps.get-registry-info.outputs.registry }} --username ${{ steps.get-registry-info.outputs.registry_username }} --password ${{ steps.get-registry-info.outputs.registry_password }}
 
-      - name: Package Helm Chart
-        id: package-chart
+      - name: Chart Info
+        id: chart-info
         run: |
           if [ "$(helm show chart helm/${{ inputs.chart }} | yq '.name')" != "${{ inputs.chart }}" ]; then
             echo "Chart name mismatch: expected ${{ inputs.chart }}, got $(helm show chart helm/${{ inputs.chart }} | yq '.name')"
@@ -38,20 +87,28 @@ jobs:
           if [ -n "$(yq '.entries.${{ inputs.chart }}[] | select( .version == "${chart_version}" ) ' ${index_file})" ]; then
             echo "Chart ${{ inputs.chart }} with version ${chart_version} already exists in ${index_file}!"
             exit 1
-          fi 
+          fi
 
-          helm package helm/${{ inputs.chart }} --destination ./tmp/ --version ${chart_version}
-          
+          registry_full_path=oci://${{ steps.get-registry-info.outputs.registry }}${{ steps.get-registry-info.outputs.registry_base_path }}
+
           echo "index_file=${index_file}" >> $GITHUB_OUTPUT
           echo "chart_version=${chart_version}" >> $GITHUB_OUTPUT
           echo "chart_appVersion=$(helm show chart helm/${{ inputs.chart }} | yq '.appVersion')" >> $GITHUB_OUTPUT
           echo "chart_description=$(helm show chart helm/${{ inputs.chart }} | yq '.description')" >> $GITHUB_OUTPUT
-          echo "chart_url=oci://ghcr.io/${{ github.repository }}/helm/${{ inputs.chart }}/${chart_version}" >> $GITHUB_OUTPUT
+          echo "registry_full_path=${registry_full_path}" >> $GITHUB_OUTPUT
+          echo "chart_url=${registry_full_path}/${{ inputs.chart }}/${chart_version}" >> $GITHUB_OUTPUT
           echo "chart_digest=$(sha256sum "./tmp/${{ inputs.chart }}-${chart_version}.tgz" | awk '{print $1}')" >> $GITHUB_OUTPUT
+
+      - name: Package Helm Chart
+        id: package-chart
+        run: |
+          helm dep up helm/${{ inputs.chart }}
+          helm package helm/${{ inputs.chart }} --destination ./tmp/ --version ${chart_version}
+          
 
       - name: Push Helm Chart to GitHub Container Registry
         run: |
-          helm push ./tmp/${{ inputs.chart }}-${{ steps.package-chart.outputs.chart_version }}.tgz oci://ghcr.io/${{ github.repository }}/helm/
+          helm push ./tmp/${{ inputs.chart }}-${{ steps.chart-info.outputs.chart_version }}.tgz ${{ steps.get-registry-info.outputs.registry_full_path }}
 
       - name: Checkout code
         uses: actions/checkout@v3
@@ -65,12 +122,12 @@ jobs:
           new_entry='{
             "apiVersion": "v2",
             "name": "${{ inputs.chart }}",
-            "version": "${{ steps.package-chart.outputs.chart_version }}",
-            "appVersion": "${{ steps.package-chart.outputs.chart_appVersion }}",
-            "description": "${{ steps.package-chart.outputs.chart_description }}",
-            "digest": "${{ steps.package-chart.outputs.chart_digest }}",
+            "version": "${{ steps.chart-info.outputs.chart_version }}",
+            "appVersion": "${{ steps.chart-info.outputs.chart_appVersion }}",
+            "description": "${{ steps.chart-info.outputs.chart_description }}",
+            "digest": "${{ steps.chart-info.outputs.chart_digest }}",
             "urls": [
-              "${{ steps.package-chart.outputs.chart_url }}"
+              "${{ steps.chart-info.outputs.chart_url }}"
             ],
             "sources": [
               "https://github.com/${{ github.repository }}/tree/${{ github.sha }}/helm/${{ inputs.chart }}"
@@ -78,15 +135,15 @@ jobs:
           }'
 
           # Append or create .entries.${chart_name}
-          if yq e ".entries.${{ inputs.chart }}" "${{ steps.package-chart.outputs.index_file }}" > /dev/null; then
+          if yq e ".entries.${{ inputs.chart }}" "${{ steps.chart-info.outputs.index_file }}" > /dev/null; then
             # Append to existing list
-            yq -i ".entries.${{ inputs.chart }} += [${new_entry}]" "${{ steps.package-chart.outputs.index_file }}"
+            yq -i ".entries.${{ inputs.chart }} += [${new_entry}]" "${{ steps.chart-info.outputs.index_file }}"
           else
             # Create new list with the entry
-            yq -i ".entries.${{ inputs.chart }} = [${new_entry}]" "${{ steps.package-chart.outputs.index_file }}"
+            yq -i ".entries.${{ inputs.chart }} = [${new_entry}]" "${{ steps.chart-info.outputs.index_file }}"
           fi
 
-          yq -i '.generated = now' "${{ steps.package-chart.outputs.index_file }}"
+          yq -i '.generated = now' "${{ steps.chart-info.outputs.index_file }}"
 
       - name: Commit and Push Index YAML
         run: |
