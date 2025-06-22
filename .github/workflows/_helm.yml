@@ -97,14 +97,15 @@ jobs:
           echo "chart_description=$(helm show chart helm/${{ inputs.chart }} | yq '.description')" >> $GITHUB_OUTPUT
           echo "registry_full_path=${registry_full_path}" >> $GITHUB_OUTPUT
           echo "chart_url=${registry_full_path}/${{ inputs.chart }}/${chart_version}" >> $GITHUB_OUTPUT
-          echo "chart_digest=$(sha256sum "./tmp/${{ inputs.chart }}-${chart_version}.tgz" | awk '{print $1}')" >> $GITHUB_OUTPUT
 
       - name: Package Helm Chart
         id: package-chart
         run: |
           helm dep up helm/${{ inputs.chart }}
-          helm package helm/${{ inputs.chart }} --destination ./tmp/ --version ${chart_version}
+          helm package helm/${{ inputs.chart }} --destination ./tmp/ --version ${{ steps.chart-info.outputs.chart_version }}
           
+          echo "chart_digest=$(sha256sum "./tmp/${{ inputs.chart }}-${{ steps.chart-info.outputs.chart_version }}.tgz" | awk '{print $1}')" >> $GITHUB_OUTPUT
+
 
       - name: Push Helm Chart to GitHub Container Registry
         run: |
@@ -125,7 +126,7 @@ jobs:
             "version": "${{ steps.chart-info.outputs.chart_version }}",
             "appVersion": "${{ steps.chart-info.outputs.chart_appVersion }}",
             "description": "${{ steps.chart-info.outputs.chart_description }}",
-            "digest": "${{ steps.chart-info.outputs.chart_digest }}",
+            "digest": "${{ steps.package-chart.outputs.chart_digest }}",
             "urls": [
               "${{ steps.chart-info.outputs.chart_url }}"
             ],
