@@ -109,7 +109,7 @@ jobs:
 
       - name: Push Helm Chart to GitHub Container Registry
         run: |
-          helm push ./tmp/${{ inputs.chart }}-${{ steps.chart-info.outputs.chart_version }}.tgz ${{ steps.get-registry-info.outputs.registry_full_path }}
+          helm push ./tmp/${{ inputs.chart }}-${{ steps.chart-info.outputs.chart_version }}.tgz ${{ steps.chart-info.outputs.registry_full_path }}
 
       - name: Checkout code
         uses: actions/checkout@v3
