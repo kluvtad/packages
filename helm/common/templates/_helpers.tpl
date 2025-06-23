@@ -79,7 +79,6 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{ base $path }}: |
 {{- tpl ($.Files.Get $path) $ | nindent 2 }}
 {{- end }}
-{{- end }}
 
 {{- else -}}
 {{- fail "No valid data found. Must specify either 'data', 'fileMappings', 'dataFromFile', or 'dataFromDir'." -}}
