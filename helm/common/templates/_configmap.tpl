@@ -16,6 +16,9 @@ metadata:
     {{- end }}
   labels:
     {{- include "common.labels" $ | nindent 4 }}
+    {{- if .labels }}
+    {{- .labels | toYaml | nindent 4 }}
+    {{- end }}
 data:
   {{- if hasKey . "data" }}
   {{- .data | toYaml | nindent 2 }}

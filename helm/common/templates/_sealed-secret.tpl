@@ -10,17 +10,28 @@ metadata:
   name: {{ include "common.fullname" $ }}
   {{- end }}
   annotations:
-    {{- if .annotations }}
-    {{- .annotations | toYaml | nindent 4 }}
+    {{- if .sealedAnnotations }}
+    {{- .sealedAnnotations | toYaml | nindent 4 }}
     {{- end }}
   labels:
     {{- include "common.labels" $ | nindent 4 }}
+    {{- if .sealedLabels }}
+    {{- .sealedLabels | default dict | toYaml | nindent 4 }}
+    {{- end }}
 spec:
   template:
     type: {{ default "Opaque" .type }}
     metadata:
       labels:
         {{- include "common.labels" $ | nindent 8 }}
+        {{- if .labels }}
+        {{- .labels | toYaml | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- if .annotations }}
+        {{- .annotations | toYaml | nindent 8 }}
+        {{- end }}
+
   encryptedData:
     {{- if hasKey . "data" }}
     {{- .data | toYaml | nindent 4 }}
