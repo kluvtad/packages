@@ -8,7 +8,7 @@ entries:
       description: A Helm chart for Kubernetes
       digest: 410daa910609886ed8c84fcb87cd491f232b47c5b75b6a849174e999f48f1438
       urls:
-        - oci://registry-1.docker.io/kluvtad/common/1.0.0
+        - oci://registry-1.docker.io/kluvtad/common:1.0.0
       sources:
         - https://github.com/kluvtad/packages/tree/4727088de1ec8923904a444b6066da26fef93e5f/helm/common
 generated: 2025-06-22T08:07:53Z
