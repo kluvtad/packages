@@ -11,4 +11,14 @@ entries:
         - oci://registry-1.docker.io/kluvtad/common:1.0.0
       sources:
         - https://github.com/kluvtad/packages/tree/4727088de1ec8923904a444b6066da26fef93e5f/helm/common
-generated: 2025-06-22T08:07:53Z
+    - apiVersion: v2
+      name: common
+      version: 1.0.1
+      appVersion: "null"
+      description: A Helm chart for Kubernetes
+      digest: 72bdb0968c5b6afa62ae27b3ef5812d61daf763fdac529912178a7c901a35cb6
+      urls:
+        - oci://registry-1.docker.io/kluvtad/common:1.0.1
+      sources:
+        - https://github.com/kluvtad/packages/tree/0703a55a7324eda5fa7c58bf34b5530e16b08f71/helm/common
+generated: 2025-06-23T02:26:11Z
