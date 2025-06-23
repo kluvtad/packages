@@ -12,7 +12,7 @@ metadata:
   {{- end }}
   annotations:
     {{- if .annotations}}
-    {{ .annotations | toYaml | nindent 4}}
+    {{- .annotations | toYaml | nindent 4}}
     {{- end }}
   labels:
     {{- include "common.labels" $ | nindent 4 }}
