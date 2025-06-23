@@ -117,8 +117,8 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "GitHub Action"
           
-          tag="docker/${{ inputs.image }}/v${{ steps.image-name-and-tags.outputs.image_semver }}"
-          git tag -a "${tag}" -m "Release Image '${{ inputs.image }}' - v${{ steps.image-name-and-tags.outputs.image_semver }}"
+          tag="docker/${{ inputs.image }}/${{ steps.image-name-and-tags.outputs.image_semver }}"
+          git tag -a "${tag}" -m "Release Image '${{ inputs.image }}' - ${{ steps.image-name-and-tags.outputs.image_semver }}"
           git push origin "${tag}"
         
       - name: Docker Metadata

@@ -114,6 +114,15 @@ jobs:
           
           echo "chart_digest=$(sha256sum "./tmp/${{ inputs.chart }}-${{ steps.chart-info.outputs.chart_version }}.tgz" | awk '{print $1}')" >> $GITHUB_OUTPUT
 
+      - name: Release Production Tag
+        if: ${{ env.env_name == 'production' }}
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "GitHub Action"
+          
+          tag="helm/${{ inputs.chart }}/${{ steps.chart-info.outputs.chart_version }}"
+          git tag -a "${tag}" -m "Release Helm chart '${{ inputs.image }}' - ${{ steps.chart-info.outputs.chart_version }}"
+          git push origin "${tag}"
 
       - name: Push Helm Chart to GitHub Container Registry
         run: |
