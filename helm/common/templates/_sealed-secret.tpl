@@ -33,14 +33,5 @@ spec:
         {{- end }}
 
   encryptedData:
-    {{- if hasKey . "data" }}
-    {{- .data | toYaml | nindent 4 }}
-    {{- else if hasKey . "dataFromFile" }}
-    {{- range $k, $v := .dataFromFile }}
-    {{ $k | quote }}: |
-      {{- tpl ( $v | $.Files.Get ) $ | nindent 6 }}
-    {{- end }}
-    {{- else if hasKey . "file" }}
-    {{- tpl ( .file | $.Files.Get ) $ | nindent 4 }}
-    {{- end }}
+    {{- include "common.cm-sec.data" . | nindent 4 }}
 {{- end -}}
