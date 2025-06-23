@@ -87,6 +87,7 @@ jobs:
           chart_version=$(yq '.version' helm/${{ inputs.chart }}/Chart.yaml)
           if [ "${{ github.ref_name }}" == "main" ]; then
             index_file="docs/charts/stable/index.yaml"
+            chart_version="${chart_version}-stable"
           else
             index_file="docs/charts/dev/index.yaml"
             chart_version="${chart_version}-${{ github.ref_name }}-${{ github.run_id }}"
