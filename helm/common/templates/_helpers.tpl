@@ -52,6 +52,9 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 
 
 {{- define "common.cm-sec.data" -}}
+{{- $ := ._global -}}
+{{- with .config -}}
+
 {{ $useTemplate := ( ne .useTemplate false )  }}
 
 {{- if hasKey . "data" }}
@@ -84,4 +87,5 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- fail "No valid data found. Must specify either 'data', 'fileMappings', 'dataFromFile', or 'dataFromDir'." -}}
 {{- end }}
 
+{{- end -}}
 {{- end -}}

@@ -20,5 +20,8 @@ metadata:
     {{- .labels | toYaml | nindent 4 }}
     {{- end }}
 data:
-  {{- include "common.cm-sec.data" . | nindent 2 }}
+  {{- include "common.cm-sec.data" ( dict 
+    "_global" $
+    "config" .
+  ) | nindent 2 }}
 {{- end }}

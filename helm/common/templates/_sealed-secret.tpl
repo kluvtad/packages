@@ -33,5 +33,8 @@ spec:
         {{- end }}
 
   encryptedData:
-    {{- include "common.cm-sec.data" . | nindent 4 }}
+    {{- include "common.cm-sec.data" ( dict 
+      "_global" $
+      "config" .
+    ) | nindent 4 }}
 {{- end -}}
