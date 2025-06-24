@@ -5,7 +5,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  {{- if .suffix }}
+  {{- if .name }}
+  name: {{ .name | quote}}
+  {{- else if .nameSuffix }}
   name: {{ include "common.fullname" $ }}-{{ .nameSuffix }}
   {{- else }}
   name: {{ include "common.fullname" $ }}

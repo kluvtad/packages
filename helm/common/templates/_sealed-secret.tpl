@@ -4,7 +4,9 @@
 apiVersion: bitnami.com/v1alpha1
 kind: SealedSecret
 metadata:
-  {{- if .nameSuffix }}
+  {{- if .name }}
+  name: {{ .name | quote}}
+  {{- else if .nameSuffix }}
   name: {{ include "common.fullname" $ }}-{{ .nameSuffix }}
   {{- else }}
   name: {{ include "common.fullname" $ }}
