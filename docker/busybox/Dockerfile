@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt update && \
     apt-get install -y \
-    wget iputils-ping procps git-all curl jq bash telnet \
+    wget iputils-ping procps git-all curl jq bash telnet dnsutils \
     apt-transport-https ca-certificates gnupg lsb-release
 
 # mysql
