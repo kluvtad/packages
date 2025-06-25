@@ -142,4 +142,14 @@ entries:
         - oci://registry-1.docker.io/kluvtad/busybox:1.1.0-helm
       sources:
         - https://github.com/kluvtad/packages/tree/2e9d72e4a0917d78bb2f4ca29963cfc02cd42bb9/helm/busybox
-generated: 2025-06-24T03:58:04Z
+    - apiVersion: v2
+      name: busybox
+      version: 1.2.0-helm
+      appVersion: 1.1.0
+      description: A Helm chart for Kubernetes
+      digest: e7217f2bbdf7fcc8cfb30286e9b6cca43ae208b1eda139e205a71e9097665329
+      urls:
+        - oci://registry-1.docker.io/kluvtad/busybox:1.2.0-helm
+      sources:
+        - https://github.com/kluvtad/packages/tree/a35ace031e12139ce8d7ccf7493a1433f8e99e92/helm/busybox
+generated: 2025-06-25T15:44:28Z
