@@ -1,0 +1,2 @@
+kubernetes==34.1.0
+pydantic-settings==2.11.0
