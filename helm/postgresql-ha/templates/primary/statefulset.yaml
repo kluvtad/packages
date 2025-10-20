@@ -44,7 +44,7 @@ spec:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ $.Values.auth.existingSecret.name | required "A secret name .Values.auth.existingSecret.name must be provided for the Postgres password" }}
+                  name: {{ tpl ($.Values.auth.existingSecret.name | required "A secret name .Values.auth.existingSecret.name must be provided for the Postgres password") $ }}
                   key: {{ $.Values.auth.existingSecret.postgresPasswordKey }}
 
           volumeMounts:
