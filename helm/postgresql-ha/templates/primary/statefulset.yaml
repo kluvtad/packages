@@ -1,0 +1,74 @@
+{{- with .Values.primary -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "postgresql-ha.fullname" $ }}-primary
+  labels:
+    {{- include "postgresql-ha.primary.labels" $ | nindent 4 }}
+spec:
+  replicas: 1 # by default is 1
+  selector:
+    matchLabels:
+      {{- include "postgresql-ha.primary.selectorLabels" $ | nindent 6 }}
+  serviceName: {{ include "postgresql-ha.fullname" $ }}-primary
+  template:
+    metadata:
+      labels:
+        {{- include "postgresql-ha.primary.labels" $ | nindent 8 }}
+    spec:
+      containers:
+        - name: "{{ $.Chart.Name }}-primary"
+          image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag | default $.Chart.AppVersion }}"
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          securityContext:
+            runAsUser: 999
+            runAsGroup: 999
+          arguments:
+            - postgres
+            - -ccluster_name=primary-0
+            # - -cconfig_file=/configs/postgres.conf
+            # - -chba_file=/configs/pg_hba.conf
+          ports:
+            - name: tcp-postgres
+              containerPort: 5432
+              protocol: TCP
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - postgres
+          {{- with .resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+          
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes:
+        {{- toYaml .persistence.accessModes | nindent 8 }}
+      {{- with .persistence.storageClass }}
+      storageClassName: {{ . | quote }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .persistence.size | quote }}
+
+{{- end }}
