@@ -16,6 +16,7 @@ tasks:
     vars: &common_vars
       S3_MC_ALIAS: 
         sh: echo {{ .ENV_FILE }} | sed 's/s3-//' | sed 's/.env//'
+      S3_BUCKET: '${S3_BUCKET}'
       S3_SUBPATH: '{{ .DB_TYPE }}/{{ .DB_ALIAS }}'
     cmds: 
       - echo "Set alias '{{ .S3_MC_ALIAS }}' - '${S3_ENDPOINT_URL}'"
@@ -33,7 +34,7 @@ tasks:
       - /workspace/storage-env-files/{{ .ENV_FILE }}
     vars: *common_vars
     cmds:
-      - mc cp --quiet --recursive {{ .BACKUP_DIR }} {{ .S3_MC_ALIAS }}/${S3_BUCKET}/{{ .S3_SUBPATH }}
+      - mc cp --quiet --recursive {{ .BACKUP_DIR }} {{ .S3_MC_ALIAS }}/{{ .S3_BUCKET }}/{{ .S3_SUBPATH }}
 
   clean:
     requries:
@@ -41,8 +42,12 @@ tasks:
         - ENV_FILE
         - DB_TYPE
         - DB_ALIAS
+        - RETENTION_DAYS
     dotenv: 
       - /workspace/storage-env-files/{{ .ENV_FILE }}
     vars: *common_vars
     cmds: 
-      - mc ls {{ .S3_MC_ALIAS }}/${S3_BUCKET}/{{ .S3_SUBPATH }}/
+      - |
+        for obj in $(mc find --older-than={{ .RETENTION_DAYS }}d {{ .S3_MC_ALIAS }}/{{ .S3_BUCKET }}/{{ .S3_SUBPATH }}/); do
+          mc rm $obj
+        done
