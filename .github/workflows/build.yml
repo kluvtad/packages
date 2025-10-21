@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       changed_files: ${{ steps.changed-files.outputs.all_changed_files }}
+      env_name: ${{ steps.set-env.outputs.env_name }}
     steps:
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
@@ -48,6 +49,7 @@ jobs:
     - name: Debug Matrix
       run: |
         echo "Matrix: ${{ steps.get-changed-images.outputs.images }}"
+        echo ENV_NAME: '${{ needs.init-setup.outputs.env_name }}'
   
   docker-image:
     name: Docker
