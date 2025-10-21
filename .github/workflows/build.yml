@@ -8,7 +8,7 @@ on:
 
 jobs:
   init-setup:
-    name: Check changed files
+    name: Initialize Setup
     runs-on: ubuntu-latest
     outputs:
       changed_files: ${{ steps.changed-files.outputs.all_changed_files }}
@@ -27,6 +27,7 @@ jobs:
             echo "env_name=production" >> $GITHUB_OUTPUT
           else
             echo "env_name=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
 
   check-changed-images: 
     name: Check Images
