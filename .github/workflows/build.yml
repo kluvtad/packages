@@ -46,10 +46,6 @@ jobs:
       run: |
         changed_images=$(echo ${changed_files} | tr ' ' '\n' | awk -F'/' '/^docker\// {print $2}' | sort -u)
         echo "images=$(echo ${changed_images} | tr -d '\n' | jq -Rsc 'split(" ")')" >> $GITHUB_OUTPUT
-    - name: Debug Matrix
-      run: |
-        echo "Matrix: ${{ steps.get-changed-images.outputs.images }}"
-        echo ENV_NAME: '${{ needs.init-setup.outputs.env_name }}'
   
   docker-image:
     name: Docker
