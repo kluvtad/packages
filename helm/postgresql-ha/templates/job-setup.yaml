@@ -11,3 +11,7 @@ spec:
         command: ["echo",  "Setup job for primary node completed."]
       restartPolicy: Never
   backoffLimit: 4
+---
+haha
+{{ .Values.parentConfigChecksum }}
+hoho

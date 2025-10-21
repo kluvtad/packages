@@ -1,7 +1,6 @@
 apiVersion: v2
 name: postgresql-ha
 description: A Helm chart for Kubernetes
-# type: application
-type: library
-version: 0.4.0
+type: application
+version: 0.4.1
 appVersion: "17.4-bookworm"
