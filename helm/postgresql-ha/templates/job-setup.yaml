@@ -1,0 +1,13 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "postgresql-ha.fullname" $ }}-setup
+spec:
+  template:
+    spec:
+      containers:
+      - name: main
+        image: ubuntu:20.04
+        command: ["echo",  "Setup job for primary node completed."]
+      restartPolicy: Never
+  backoffLimit: 4

@@ -24,7 +24,7 @@ spec:
         - name: "{{ $.Chart.Name }}-primary"
           image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag | default $.Chart.AppVersion }}"
           imagePullPolicy: {{ $.Values.image.pullPolicy }}
-          arguments:
+          args:
             - postgres
             - -ccluster_name=primary-0
             # - -cconfig_file=/configs/postgres.conf
