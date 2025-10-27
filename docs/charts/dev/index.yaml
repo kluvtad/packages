@@ -1,3 +1,14 @@
 apiVersion: v1
-entries: {}
-generated: 2025-06-12T08:46:46Z
+entries:
+  postgresql-ha:
+    - apiVersion: v2
+      name: postgresql-ha
+      version: 0.5.1-helm-dev-18848677878
+      appVersion: 17.4-bookworm
+      description: A Helm chart for Kubernetes
+      digest: d783f9d61157b95e8a0f472339cd51bed0fef4e6973e5e677123e9edc259112f
+      urls:
+        - oci://ghcr.io/kluvtad/packages/helm/postgresql-ha:0.5.1-helm-dev-18848677878
+      sources:
+        - https://github.com/kluvtad/packages/tree/fccc564f1f4a547ea929c406b64cc3982e6f14ca/helm/postgresql-ha
+generated: 2025-10-27T16:39:19Z
