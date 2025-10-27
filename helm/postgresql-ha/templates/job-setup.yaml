@@ -4,7 +4,6 @@ metadata:
   name: {{ include "postgresql-ha.fullname" $ }}-setup
   annotations:
     {{- toYaml .Values.setupJob.annotations | nindent 4 }}
-    reloader.stakater.com/auto: "true"
 spec:
   template:
     spec:
