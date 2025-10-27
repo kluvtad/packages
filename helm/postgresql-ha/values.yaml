@@ -13,6 +13,8 @@ auth:
     name: ""
     postgresPasswordKey: postgres-password
 
+setupJob:
+  annotations: {}
 
 primary:
   nodeSelector: {}

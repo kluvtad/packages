@@ -2,12 +2,21 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: {{ include "postgresql-ha.fullname" $ }}-setup
+  annotations:
+    {{- toYaml .Values.setupJob.annotations | nindent 4 }}
+    reloader.stakater.com/auto: "true"
 spec:
   template:
     spec:
       containers:
-      - name: main
-        image: ubuntu:20.04
-        command: ["echo",  "Setup job for primary node completed."]
+        - name: main
+          image: ubuntu:20.04
+          command: ["echo",  "Setup job for primary node completed."]
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ tpl ($.Values.auth.existingSecret.name | required "A secret name .Values.auth.existingSecret.name must be provided for the Postgres password") $ }}
+                  key: {{ $.Values.auth.existingSecret.postgresPasswordKey }}
       restartPolicy: Never
   backoffLimit: 4
