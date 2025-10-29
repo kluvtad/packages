@@ -6,4 +6,10 @@ RUN apk add py3-pip
 
 RUN pip install --break-system-packages psycopg2-binary
 
+USER nobody
+
+COPY . /workspace
+
 WORKDIR /workspace
+
+ENTRYPOINT ["/workspace/entrypoint.sh"]

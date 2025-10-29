@@ -1,0 +1,3 @@
+#!/bin/sh
+
+ansible-playbook -i ./inventory/hosts.ini ./playbook.yml
