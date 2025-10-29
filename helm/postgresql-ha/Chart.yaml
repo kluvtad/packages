@@ -3,4 +3,3 @@ name: postgresql-ha
 description: A Helm chart for Kubernetes
 type: application
 version: 0.5.1
-appVersion: "17.4-bookworm"

@@ -22,7 +22,7 @@ spec:
         fsGroup: 999
       containers:
         - name: "{{ $.Chart.Name }}-primary"
-          image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag | default $.Chart.AppVersion }}"
+          image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag | required "A image tag must be provided in values.yaml" }}"
           imagePullPolicy: {{ $.Values.image.pullPolicy }}
           args:
             - postgres
