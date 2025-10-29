@@ -6,7 +6,7 @@ RUN apk add py3-pip
 
 RUN pip install --break-system-packages psycopg2-binary
 
-USER nobody
+# USER nobody
 
 COPY . /workspace
 

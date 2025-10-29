@@ -1,2 +1,4 @@
 Dockerfile
 VERSION.txt
+.env
+README.md
