@@ -4,6 +4,6 @@ RUN ansible-galaxy collection install community.docker community.postgresql
 
 RUN apk add py3-pip
 
-RUN pip3 install psycopg2-binary
+RUN pip install psycopg2-binary
 
 WORKDIR /workspace
