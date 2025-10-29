@@ -13,5 +13,5 @@ $ docker build -t test .
 ```
 3. Run for dev
 ```bash
-$ docker run -it --network=host --env-file=.env -v $PWD:/workspace --entrypoint sh test
+$ docker run -it --network=host --env-file=.env -v $PWD:/workspace --entrypoint bash test
 ```

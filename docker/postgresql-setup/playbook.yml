@@ -1,5 +1,15 @@
-- name: "Ping"
-  hosts: all
+- name: "Master"
+  hosts: local
+  environment: &psql_env
+    PGHOST: "{{ MASTER_PGHOST }}"
+    PGPORT: "{{ MASTER_PGPORT }}"
+    PGDATABASE: "{{ MASTER_PGDATABASE }}"
+    PGUSER: "{{ MASTER_PGUSER }}"
+    PGPASSWORD: "{{ MASTER_PGPASSWORD }}"
   tasks:
-    - name: "Ping all hosts"
-      ping:
+    - name: "Ping PostgreSQL server"
+      community.postgresql.postgresql_ping:
+      register: ping_result
+      failed_when: not ping_result.is_available
+      retries: 4
+      delay: 30
