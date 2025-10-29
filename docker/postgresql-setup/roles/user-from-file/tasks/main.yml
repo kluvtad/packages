@@ -1,0 +1,4 @@
+- debug:
+    var: user_file
+- debug:
+    msg: "{{ lookup('ansible.builtin.file', user_file) }}"

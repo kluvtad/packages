@@ -6,10 +6,21 @@
     PGDATABASE: "{{ MASTER_PGDATABASE }}"
     PGUSER: "{{ MASTER_PGUSER }}"
     PGPASSWORD: "{{ MASTER_PGPASSWORD }}"
-  tasks:
+  pre_tasks:
     - name: "Ping PostgreSQL server"
       community.postgresql.postgresql_ping:
       register: ping_result
       failed_when: not ping_result.is_available
       retries: 4
       delay: 30
+    - find:
+        paths: /workspace/users
+        patterns: "*.yml"
+      register: user_files_raw
+    - set_fact:
+        user_files: "{{ user_files_raw.files | map(attribute='path') | list }}"
+    - include_role:
+        name: user-from-file
+      vars:
+        user_file: "{{ item }}"
+      loop: "{{ user_files }}"
