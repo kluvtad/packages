@@ -1,4 +1,24 @@
+- name: "Load user configuration from file {{ user_file }}"
+  set_fact:
+    user_config: "{{ lookup('ansible.builtin.file', user_file) | from_yaml }}"
 - debug:
-    var: user_file
-- debug:
-    msg: "{{ lookup('ansible.builtin.file', user_file) }}"
+    var: user_config
+
+- name: "Set valid keys for user configuration"
+  set_fact:
+    valid_keys:
+      - comment
+      - configuration
+      - conn_limit
+      - expires
+      - role_attr_flags
+
+- name: "Validate user_config keys"
+  set_fact:
+    invalid_keys: "{{ user_config | list | difference(valid_keys) }}"
+
+
+- name: "Fail if invalid keys are found"
+  fail:
+    msg: "Invalid keys found in {{ user_file }}: {{ invalid_keys | join(', ') }}. Valid keys are: {{ valid_keys | join(', ') }}"
+  when: invalid_keys | length > 0
