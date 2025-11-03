@@ -18,8 +18,16 @@
 - name: "Validate {{ username }}'s user_config keys"
   set_fact:
     invalid_keys: "{{ user_config | list | difference(valid_keys) }}"
+    password: "{{ lookup('ansible.builtin.env', 'PG_USER_PASSWORD_' + (username | upper | replace('-', '_'))) }}"
+  failed_when: invalid_keys | length > 0 or password == ""
 
-- name: "{{ username }} - Fail if invalid keys are found"
-  fail:
-    msg: "Invalid keys found in {{ username }}: {{ invalid_keys | join(', ') }}. Valid keys are: {{ valid_keys | join(', ') }}"
-  when: invalid_keys | length > 0
+- name: "Prepare user parameters"
+  set_fact:
+    base_params:
+      name: "{{ username }}"
+      password: "{{ password }}"
+
+- name: "Add {{ username }} to PostgreSQL"
+  community.postgresql.postgresql_user: "{{ {'name': username, 'password': password} | ansible.builtin.combine(user_config | from_yaml) }}"
+  
+
