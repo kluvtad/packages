@@ -28,6 +28,7 @@
       password: "{{ password }}"
 
 - name: "Add {{ username }} to PostgreSQL"
-  community.postgresql.postgresql_user: "{{ {'name': username, 'password': password} | ansible.builtin.combine(user_config | from_yaml) }}"
+  community.postgresql.postgresql_user: |
+    {{ {'name': username, 'password': password} | ansible.builtin.combine(user_config | from_yaml) }}
   
 
