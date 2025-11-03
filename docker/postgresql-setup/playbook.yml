@@ -24,3 +24,5 @@
       vars:
         user_file: "{{ item }}"
       loop: "{{ user_files }}"
+    - debug:
+        var: username

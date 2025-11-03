@@ -1,32 +1,28 @@
-- name: "Load user configuration from file {{ user_file }}"
-  set_fact:
-    user_config: "{{ lookup('ansible.builtin.file', user_file) | from_yaml }}"
+- name: "Load user from file {{ user_file }}"
+  block: 
+    - name: "Load user configuration from file"
+      set_fact:
+        user_config: "{{ lookup('ansible.builtin.file', user_file) | from_yaml }}"
 
-- name: "Extract username from file path"
-  set_fact:
-    username: "{{ user_file | basename | regex_replace('\\.yml$', '') }}"
+    - name: "Extract username from file path"
+      set_fact:
+        username: "{{ user_file | basename | regex_replace('\\.yml$', '') }}"
 
-- name: "Set valid keys for user configuration"
-  set_fact:
-    valid_keys:
-      - comment
-      - configuration
-      - conn_limit
-      - expires
-      - role_attr_flags
+    - name: "Set valid keys for user configuration"
+      set_fact:
+        valid_keys:
+          - comment
+          - configuration
+          - conn_limit
+          - expires
+          - role_attr_flags
 
-- name: "Validate {{ username }}'s user_config keys"
-  set_fact:
-    invalid_keys: "{{ user_config | list | difference(valid_keys) }}"
-    password: "{{ lookup('ansible.builtin.env', 'PG_USER_PASSWORD_' + (username | upper | replace('-', '_'))) }}"
-  failed_when: invalid_keys | length > 0 or password == ""
-
-- name: "Prepare user parameters"
-  set_fact:
-    base_params:
-      name: "{{ username }}"
-      password: "{{ password }}"
-
+    - name: "Validate {{ username }}'s user_config keys"
+      set_fact:
+        invalid_keys: "{{ user_config | list | difference(valid_keys) }}"
+        password: "{{ lookup('ansible.builtin.env', 'PG_USER_PASSWORD_' + (username | upper | replace('-', '_'))) }}"
+      failed_when: invalid_keys | length > 0 or password == ""
+ 
 - name: "Add {{ username }} to PostgreSQL"
   community.postgresql.postgresql_user: |
     {{ {'name': username, 'password': password} | ansible.builtin.combine(user_config | from_yaml) }}
