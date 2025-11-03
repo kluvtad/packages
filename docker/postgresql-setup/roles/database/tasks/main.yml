@@ -1,0 +1,16 @@
+- name: "Load database from file"
+  block: 
+    - name: "Load database configuration - {{ database_file }}"
+      set_fact:
+        database_config: "{{ lookup('ansible.builtin.file', database_file) | from_yaml }}"
+        dbname: "{{ database_file | basename | regex_replace('\\.yml$', '') }}"
+        valid_keys:
+          - comment
+          - conn_limit
+          - owner
+          - template
+
+    - name: "Validate {{ dbname }}'s database_config keys"
+      set_fact:
+        invalid_keys: "{{ database_config | list | difference(valid_keys) }}"
+      failed_when: invalid_keys | length > 0

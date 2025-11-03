@@ -13,14 +13,27 @@
       failed_when: not ping_result.is_available
       retries: 4
       delay: 30
-    - find:
-        paths: /workspace/users
-        patterns: "*.yml"
-      register: user_files_raw
-    - set_fact:
-        user_files: "{{ user_files_raw.files | map(attribute='path') | list }}"
-    - include_role:
-        name: user-from-file
-      vars:
-        user_file: "{{ item }}"
-      loop: "{{ user_files }}"
+
+    - name: "Users setup"
+      block:
+        - find:
+            paths: /workspace/configs/users
+            patterns: "*.yml"
+          register: user_files_raw
+        - include_role:
+            name: user
+          vars:
+            user_file: "{{ item }}"
+          loop: "{{ user_files_raw.files | map(attribute='path') | list }}"
+    
+    - name: "Databases setup"
+      block:
+        - find:
+            paths: /workspace/configs/databases
+            patterns: "*.yml"
+          register: database_files_raw
+        - include_role:
+            name: database
+          vars:
+            database_file: "{{ item }}"
+          loop: "{{ database_files_raw.files | map(attribute='path') | list }}"

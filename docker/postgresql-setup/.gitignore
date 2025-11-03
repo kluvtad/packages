@@ -1,2 +1,2 @@
-users/*
-!users/.gitkeep
+configs/*/*
+!configs/*/.gitkeep
