@@ -1,15 +1,9 @@
-- name: "Load user from file {{ user_file }}"
+- name: "Load user from file"
   block: 
-    - name: "Load user configuration from file"
+    - name: "Load user configuration - {{ user_file }}"
       set_fact:
         user_config: "{{ lookup('ansible.builtin.file', user_file) | from_yaml }}"
-
-    - name: "Extract username from file path"
-      set_fact:
         username: "{{ user_file | basename | regex_replace('\\.yml$', '') }}"
-
-    - name: "Set valid keys for user configuration"
-      set_fact:
         valid_keys:
           - comment
           - configuration
