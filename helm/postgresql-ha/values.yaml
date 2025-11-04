@@ -34,14 +34,146 @@ primary:
 
 users:
   existingConfigmap: ""
-  config:
-    backup:
-      comment: "backup user"
-    monitor: ""
+  config: {}
 
 databases:
   existingConfigmap: ""
   config: {}
+
+metrics:
+  enabled: false
+  image:
+    repository: quay.io/prometheuscommunity/postgres-exporter
+    tag: v0.17.1
+    pullPolicy: IfNotPresent
+  customMetrics:
+    pg_uptime:
+      query: "SELECT EXTRACT(EPOCH FROM now() - pg_postmaster_start_time()) as seconds"
+      metrics: 
+        - seconds:
+            usage: "COUNTER"
+            description: "PostgreSQL uptime in seconds"
+
+    pg_ha_standby:
+      query: |
+        SELECT
+            CASE
+                -- No synchronous replication configured
+                WHEN setting = '' THEN 0
+
+                -- ANY <n> (...) => take the number after "ANY"
+                WHEN setting ~* '^ANY *([0-9]+)' THEN
+                    (regexp_match(setting, '^any *([0-9]+)', 'i'))[1]::int
+
+                -- FIRST <n> (...) => take the number after "FIRST"
+                WHEN setting ~* '^FIRST *([0-9]+)' THEN
+                    (regexp_match(setting, '^first *([0-9]+)', 'i'))[1]::int
+
+                -- No ANY / FIRST keywords = FIRST 1 (...)
+                ELSE
+                    1
+            END AS min_sync_required,
+            (
+                SELECT COUNT(*)
+                FROM pg_stat_replication
+                WHERE sync_state = 'sync'
+            ) AS sync_count,
+            (
+                SELECT COUNT(*)
+                FROM pg_stat_replication
+                WHERE sync_state = 'potential'
+            ) AS potential_count,
+            (
+                SELECT COUNT(*)
+                FROM pg_stat_replication
+                WHERE sync_state = 'async'
+            ) AS async_count
+        FROM pg_settings
+        WHERE name = 'synchronous_standby_names';
+      metrics:
+        - min_sync_required:
+            usage: "GAUGE"
+            description: "Minimum number of synchronous standbys required"
+        - sync_count:
+            usage: "GAUGE"
+            description: "Current number of synchronous standbys"
+        - potential_count:
+            usage: "GAUGE"
+            description: "Current number of potential synchronous standbys"
+        - async_count:
+            usage: "GAUGE"
+            description: "Current number of asynchronous standbys"
+
+    pg_ha_stat_replication:
+      query: |
+        select 
+            application_name,
+            client_addr, client_hostname,
+            sync_state,
+            
+            write_lsn - pg_lsn('0/0') as write_lsn_bytes,
+            flush_lsn - pg_lsn('0/0') as flush_lsn_bytes,
+            replay_lsn - pg_lsn('0/0') as replay_lsn_bytes,
+            
+            pg_current_wal_flush_lsn() - write_lsn as write_lsn_diff_bytes,
+            pg_current_wal_flush_lsn() - flush_lsn as flush_lsn_diff_bytes,
+            pg_current_wal_flush_lsn() - replay_lsn as replay_lsn_diff_bytes,
+
+            EXTRACT(EPOCH FROM COALESCE(write_lag, '0 seconds'::interval))::int AS write_lag_seconds,
+            EXTRACT(EPOCH FROM COALESCE(flush_lag, '0 seconds'::interval))::int AS flush_lag_seconds,
+            EXTRACT(EPOCH FROM COALESCE(replay_lag, '0 seconds'::interval))::int AS replay_lag_seconds
+        from pg_stat_replication;
+      metrics:
+        - application_name:
+            usage: "LABEL"
+            description: "Replication application name"
+        - client_addr:
+            usage: "LABEL"
+            description: "Client IP address"
+        - client_hostname:
+            usage: "LABEL"
+            description: "Client hostname"
+        - sync_state:
+            usage: "LABEL"
+            description: "Synchronization state (sync, async, potential)"
+        - write_lsn_bytes:
+            usage: "GAUGE"
+            description: "Write LSN in bytes"
+        - flush_lsn_bytes:
+            usage: "GAUGE"
+            description: "Flush LSN in bytes"
+        - replay_lsn_bytes:
+            usage: "GAUGE"
+            description: "Replay LSN in bytes"
+        - write_lsn_diff_bytes:
+            usage: "GAUGE"
+            description: "Difference between write LSN and current WAL flush LSN in bytes"
+        - flush_lsn_diff_bytes:
+            usage: "GAUGE"
+            description: "Difference between flush LSN and current WAL flush LSN in bytes"
+        - replay_lsn_diff_bytes:
+            usage: "GAUGE"
+            description: "Difference between replay LSN and current WAL replay LSN in bytes"
+        - write_lag_seconds:
+            usage: "GAUGE"
+            description: "Write lag interval in seconds"
+        - flush_lag_seconds:
+            usage: "GAUGE"
+            description: "Flush lag interval in seconds"
+        - replay_lag_seconds:
+            usage: "GAUGE"
+            description: "Replay lag interval in seconds"
+
+    pg_cluster:
+      query: "SELECT setting AS cluster_name, 1 as info FROM pg_settings WHERE name = 'cluster_name'"
+      metrics:
+        - cluster_name:
+            usage: "LABEL"
+            description: "PostgreSQL cluster name"
+        - info:
+            usage: "GAUGE"
+            description: "Constant value for cluster_name metric"
+
 
 imagePullSecrets: []
 nameOverride: ""
