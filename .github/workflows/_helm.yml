@@ -28,7 +28,6 @@ jobs:
   build-and-push:
     name: Build and Push
     runs-on: ubuntu-latest
-    needs: get-job-env
     environment: ${{ inputs.ENV_NAME }}
     steps:
       - name: Checkout code
