@@ -25,9 +25,8 @@ restartPolicy: Never
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "postgresql-ha.fullname" $ }}-setup
+  name: {{ include "postgresql-ha.fullname" $ }}-setup-{{ include "pod.job-setup.spec" . | sha256sum | slice 0 5 }}
   annotations:
-    checksum/spec: {{ include "pod.job-setup.spec" . | sha256sum | quote}}
     {{- with .Values.setupJob.annotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
