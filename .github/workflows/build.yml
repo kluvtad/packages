@@ -83,10 +83,6 @@ jobs:
           changed_charts=$(echo ${changed_files} | tr ' ' '\n' | awk -F'/' '/^helm\// {print $2}' | sort -u)
           echo "charts=$(echo ${changed_charts} | tr -d '\n' | jq -Rsc 'split(" ")')" >> $GITHUB_OUTPUT
 
-      - name: Debug Matrix
-        run: |
-          echo "Matrix: ${{ steps.get-changed-charts.outputs.charts }}"
-
   helm-chart: 
     name: Helm Charts
     needs: check-changed-charts
@@ -97,6 +93,7 @@ jobs:
     uses: ./.github/workflows/_helm.yml
     with:
       chart: '${{ matrix.chart }}'
+      ENV_NAME: '${{ needs.init-setup.outputs.env_name }}'
       DOCKER_HUB_USERNAME: kluvtad
       DOCKER_HUB_BASE_PATH: kluvtad
     secrets:
