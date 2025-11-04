@@ -3,3 +3,7 @@ name: postgresql-ha
 description: A Helm chart for Kubernetes
 type: application
 version: 0.6.0
+# dependencies:
+#   - name: common
+#     version: 3.1.0-helm
+#     repository: https://kluvtad.github.io/packages/charts/stable

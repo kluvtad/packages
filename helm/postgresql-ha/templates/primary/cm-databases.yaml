@@ -1,0 +1,15 @@
+{{- if not .Values.databases.existingConfigmap -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "postgresql-ha.fullname" $ }}-databases
+data:
+  {{- range $name, $config := .Values.databases.config }}
+  {{- if $config | empty}}
+  {{ $name }}.yml: ""
+  {{- else }}
+  {{ $name }}.yml: |
+    {{- $config | toYaml | nindent 4 }}
+  {{- end }}
+  {{- end }}
+{{- end }}

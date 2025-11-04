@@ -3,7 +3,7 @@ containers:
   - name: main
     image: "{{ .Values.setupJob.image.repository }}:{{ .Values.setupJob.image.tag }}"
     imagePullPolicy: {{ .Values.setupJob.image.pullPolicy }}
-    command: ["echo",  "Setup job for primary node completed."]
+    command: ["tail", "-f", "/dev/null"]
     env:
       - name: MASTER_PGHOST
         value: {{ include "postgresql-ha.fullname" $ }}-primary-0.{{ include "postgresql-ha.fullname" $ }}-primary-hl.{{ $.Release.Namespace }}.svc
@@ -19,6 +19,18 @@ containers:
           secretKeyRef:
             name: {{ tpl ($.Values.auth.existingSecret.name | required "A secret name .Values.auth.existingSecret.name must be provided for the Postgres password") $ }}
             key: {{ $.Values.auth.existingSecret.postgresPasswordKey }}
+    volumeMounts:
+      - name: users
+        mountPath: /workspace/configs/users
+      - name: databases
+        mountPath: /workspace/configs/databases
+volumes:
+  - name: users
+    configMap:
+      name: {{ include "postgresql-ha.primary.configmap.users" $ }}
+  - name: databases
+    configMap:
+      name: {{ include "postgresql-ha.primary.configmap.databases" $ }}
 restartPolicy: Never
 {{- end -}}
 ---

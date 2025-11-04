@@ -3,3 +3,4 @@ tmp/*
 **/charts/
 .env
 !docs/charts/
+Chart.lock

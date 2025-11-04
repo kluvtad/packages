@@ -32,6 +32,16 @@ primary:
       - ReadWriteOnce
     size: 4Gi
 
+users:
+  existingConfigmap: ""
+  config:
+    backup:
+      comment: "backup user"
+    monitor: ""
+
+databases:
+  existingConfigmap: ""
+  config: {}
 
 imagePullSecrets: []
 nameOverride: ""
