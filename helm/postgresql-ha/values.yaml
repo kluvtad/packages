@@ -15,6 +15,10 @@ auth:
 
 setupJob:
   annotations: {}
+  image:
+    repository: ubuntu
+    tag: "20.04"
+    pullPolicy: IfNotPresent
 
 primary:
   nodeSelector: {}

@@ -10,7 +10,7 @@ spec:
   selector:
     matchLabels:
       {{- include "postgresql-ha.primary.selectorLabels" $ | nindent 6 }}
-  serviceName: {{ include "postgresql-ha.fullname" $ }}-primary
+  serviceName: {{ include "postgresql-ha.fullname" $ }}-primary-hl
   template:
     metadata:
       labels:
