@@ -14,3 +14,6 @@
       set_fact:
         invalid_keys: "{{ database_config | list | difference(valid_keys) }}"
       failed_when: invalid_keys | length > 0
+- name: "Create {{ dbname }} in PostgreSQL"
+  community.postgresql.postgresql_db: |
+    {{ {'name': dbname} | ansible.builtin.combine(database_config | from_yaml) }}
