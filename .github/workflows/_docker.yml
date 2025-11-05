@@ -1,10 +1,10 @@
-name: Build and Push Docker Images
+name: Release Docker Images
 
 on:
   workflow_call:
     inputs:
       image:
-        description: 'The name of the Docker image to build and push'
+        description: 'The name of the Docker image to Release'
         required: true
         type: string
       DOCKER_HUB_BASE_PATH:
@@ -25,10 +25,13 @@ on:
         required: false
 
 jobs:
-  build-and-push:
-    name: Build and Push
+  release:
+    name: Release
     runs-on: ubuntu-latest
     environment: ${{ inputs.ENV_NAME }}
+    outputs:
+      image_name: ${{ steps.image-name-and-tags.outputs.image_name }}
+      image_tag: ${{ steps.image-name-and-tags.outputs.image_semver }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -103,7 +106,7 @@ jobs:
           tags: |
             ${{ steps.image-name-and-tags.outputs.image_tags }}
 
-      - name: Build and push
+      - name: Release
         uses: docker/build-push-action@v6
         with:
           context: ./docker/${{ inputs.image }}
@@ -120,3 +123,19 @@ jobs:
           tag="docker/${{ inputs.image }}/${{ steps.image-name-and-tags.outputs.image_semver }}"
           git tag -a "${tag}" -m "Release Image '${{ inputs.image }}' - ${{ steps.image-name-and-tags.outputs.image_semver }}"
           git push origin "${tag}"
+  noti:
+    name: Notification
+    needs: 
+      - release
+    if: ${{ inputs.ENV_NAME == 'production' }}
+    uses: ./.github/workflows/_notification.yml
+    with:
+      noti_type: 'telegram'
+
+      TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID }}
+      TELEGRAM_THREAD_ID: ${{ vars.TELEGRAM_THREAD_ID }}
+      message: |
+        ️{{- if ${{ needs.release.result }} == 'success' }}✅{{- else }}❌{{- end }}
+        Docker Image **${{ inputs.image }}** released: `${{ needs.release.outputs.image_tag }}`
+    secrets:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}

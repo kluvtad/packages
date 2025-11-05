@@ -1,0 +1,46 @@
+- name: "Master"
+  hosts: local
+  environment: &psql_env
+    PGHOST: "{{ MASTER_PGHOST }}"
+    PGPORT: "{{ MASTER_PGPORT }}"
+    PGDATABASE: "{{ MASTER_PGDATABASE }}"
+    PGUSER: "{{ MASTER_PGUSER }}"
+    PGPASSWORD: "{{ MASTER_PGPASSWORD }}"
+  pre_tasks:
+    - name: "Ping PostgreSQL server"
+      community.postgresql.postgresql_ping:
+      register: ping_result
+      failed_when: not ping_result.is_available
+      retries: 4
+      delay: 30
+
+    - name: "Find configuration files"
+      block: 
+      - name: Find user configuration files
+        find:
+          paths: /workspace/configs/users
+          patterns: "*.yml"
+        register: user_files_raw
+      - name: Find database configuration files
+        find:
+          paths: /workspace/configs/databases
+          patterns: "*.yml"
+        register: database_files_raw
+
+      - include_role:
+          name: user
+        vars:
+          user_file: "{{ item }}"
+        loop: "{{ user_files_raw.files | map(attribute='path') | list }}"
+    
+      - include_role:
+          name: database
+        vars:
+          database_file: "{{ item }}"
+        loop: "{{ database_files_raw.files | map(attribute='path') | list }}"
+      
+      - include_role:
+          name: user-priv
+        vars:
+          user_file: "{{ item }}"
+        loop: "{{ user_files_raw.files | map(attribute='path') | list }}"

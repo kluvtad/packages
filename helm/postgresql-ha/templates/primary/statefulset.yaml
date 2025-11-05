@@ -10,7 +10,7 @@ spec:
   selector:
     matchLabels:
       {{- include "postgresql-ha.primary.selectorLabels" $ | nindent 6 }}
-  serviceName: {{ include "postgresql-ha.fullname" $ }}-primary
+  serviceName: {{ include "postgresql-ha.fullname" $ }}-primary-hl
   template:
     metadata:
       labels:
@@ -21,8 +21,8 @@ spec:
         runAsGroup: 999
         fsGroup: 999
       containers:
-        - name: "{{ $.Chart.Name }}-primary"
-          image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag | default $.Chart.AppVersion }}"
+        - name: "main"
+          image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag | required "A image tag must be provided in values.yaml" }}"
           imagePullPolicy: {{ $.Values.image.pullPolicy }}
           args:
             - postgres
@@ -61,6 +61,22 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+        {{- with $.Values.metrics }}
+        {{- if .enabled }}
+        - name: metrics
+          image: {{ .image.repository }}:{{ .image.tag }}
+          imagePullPolicy: {{ .image.pullPolicy }}
+          env:
+            - name: DATA_SOURCE_URI
+              value: "localhost:5432/postgres?sslmode=disable"
+            - name: DATA_SOURCE_USER
+              value: "monitor"
+
+            # TODO: Enable custom queries
+            # - name: PG_EXPORTER_EXTEND_QUERY_PATH
+            #   value: /queries.yaml
+        {{- end }}
+        {{- end }}
       {{- with .nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

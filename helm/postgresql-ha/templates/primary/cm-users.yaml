@@ -1,0 +1,19 @@
+{{- if not .Values.users.existingConfigmap -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "postgresql-ha.fullname" $ }}-users
+data:
+  {{- range $name, $config := .Values.users.config }}
+  {{- if $config | empty}}
+  {{ $name }}.yml: ""
+  {{- else }}
+  {{ $name }}.yml: |
+    {{- $config | toYaml | nindent 4 }}
+  {{- end }}
+  {{- end }}
+
+  {{- if .Values.metrics.enabled }}
+  monitor.yml: ""
+  {{- end }}
+{{- end }}

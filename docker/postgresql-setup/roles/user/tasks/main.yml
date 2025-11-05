@@ -1,0 +1,36 @@
+- name: "Load user from file"
+  block: 
+    - name: "Load user configuration - {{ user_file }}"
+      set_fact:
+        user_config: "{{ lookup('ansible.builtin.file', user_file) | from_yaml }}"
+        username: "{{ user_file | basename | regex_replace('\\.yml$', '') }}"
+        valid_keys:
+          - comment
+          - configuration
+          - conn_limit
+          - expires
+          - role_attr_flags
+
+        # Custom keys
+        for_privs_keys:
+          - groups
+
+    - name: "Validate {{ username }}'s user_config keys"
+      set_fact:
+        invalid_keys: "{{ user_config | list | difference(valid_keys + for_privs_keys) }}"
+        password: "{{ lookup('ansible.builtin.env', 'PG_USER_PASSWORD_' + (username | upper | replace('-', '_'))) }}"
+      failed_when: invalid_keys | length > 0 or password == ""
+    - name: "Set user_params for {{ username }}"
+      set_fact:
+        user_params: |
+          {{ 
+            {'name': username, 'password': password} 
+            | ansible.builtin.combine(user_config | from_yaml) 
+            | ansible.utils.remove_keys(target=for_privs_keys)
+          }}
+
+- name: "Add {{ username }} to PostgreSQL"
+  community.postgresql.postgresql_user: "{{ user_params }}"
+    
+  
+

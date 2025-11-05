@@ -1,21 +1,49 @@
+{{- define "pod.job-setup.spec" -}}
+containers:
+  - name: main
+    image: "{{ .Values.setupJob.image.repository }}:{{ .Values.setupJob.image.tag }}"
+    imagePullPolicy: {{ .Values.setupJob.image.pullPolicy }}
+    command: ["tail", "-f", "/dev/null"]
+    env:
+      - name: MASTER_PGHOST
+        value: {{ include "postgresql-ha.fullname" $ }}-primary-0.{{ include "postgresql-ha.fullname" $ }}-primary-hl.{{ $.Release.Namespace }}.svc
+      - name: MASTER_PGPORT
+        value: "5432"
+
+      - name: MASTER_PGDATABASE
+        value: postgres
+      - name: MASTER_PGUSER
+        value: postgres
+      - name: MASTER_PGPASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: {{ tpl ($.Values.auth.existingSecret.name | required "A secret name .Values.auth.existingSecret.name must be provided for the Postgres password") $ }}
+            key: {{ $.Values.auth.existingSecret.postgresPasswordKey }}
+    volumeMounts:
+      - name: users
+        mountPath: /workspace/configs/users
+      - name: databases
+        mountPath: /workspace/configs/databases
+volumes:
+  - name: users
+    configMap:
+      name: {{ include "postgresql-ha.primary.configmap.users" $ }}
+  - name: databases
+    configMap:
+      name: {{ include "postgresql-ha.primary.configmap.databases" $ }}
+restartPolicy: Never
+{{- end -}}
+---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "postgresql-ha.fullname" $ }}-setup
+  name: {{ include "postgresql-ha.fullname" $ }}-setup-{{ include "pod.job-setup.spec" . | sha256sum | substr 0 5 }}
   annotations:
-    {{- toYaml .Values.setupJob.annotations | nindent 4 }}
+    {{- with .Values.setupJob.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   template:
     spec:
-      containers:
-        - name: main
-          image: ubuntu:20.04
-          command: ["echo",  "Setup job for primary node completed."]
-          env:
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ tpl ($.Values.auth.existingSecret.name | required "A secret name .Values.auth.existingSecret.name must be provided for the Postgres password") $ }}
-                  key: {{ $.Values.auth.existingSecret.postgresPasswordKey }}
-      restartPolicy: Never
+      {{- include "pod.job-setup.spec" . | nindent 6 }}
   backoffLimit: 4
