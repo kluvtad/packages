@@ -125,7 +125,7 @@ jobs:
     needs: 
       - release
     if: always()
-    uses: ./.github/workflows/_noti.yml
+    uses: ./.github/workflows/templates/notifications/main.yml
     with:
       noti_type: 'telegram'
       message: |
