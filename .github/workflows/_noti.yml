@@ -7,6 +7,10 @@ on:
         description: 'The type of notification to send'
         required: true
         type: string
+      message:
+        description: 'The notification message'
+        required: true
+        type: string
 
 jobs:
   send-notification:
@@ -18,4 +22,4 @@ jobs:
 
       - name: Send ${{ inputs.noti_type }} Notification
         run: |
-          echo "hihi"
+          echo "${{ inputs.message }}"

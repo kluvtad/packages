@@ -1,10 +1,10 @@
-name: Build and Push Docker Images
+name: Release Docker Images
 
 on:
   workflow_call:
     inputs:
       image:
-        description: 'The name of the Docker image to build and push'
+        description: 'The name of the Docker image to Release'
         required: true
         type: string
       DOCKER_HUB_BASE_PATH:
@@ -25,8 +25,8 @@ on:
         required: false
 
 jobs:
-  build-and-push:
-    name: Build and Push
+  release:
+    name: Release
     runs-on: ubuntu-latest
     environment: ${{ inputs.ENV_NAME }}
     steps:
@@ -103,7 +103,7 @@ jobs:
           tags: |
             ${{ steps.image-name-and-tags.outputs.image_tags }}
 
-      - name: Build and push
+      - name: Release
         uses: docker/build-push-action@v6
         with:
           context: ./docker/${{ inputs.image }}
@@ -123,9 +123,13 @@ jobs:
   noti:
     name: Notification
     needs: 
-      - build-and-push
-    if: needs.check-changed-images.outputs.images != '[]'
+      - release
+    if: always()
     uses: ./.github/workflows/_noti.yml
     with:
       noti_type: 'telegram'
+      message: |
+        Docker Image ${{ inputs.image }} released with tags:
+        ${{ steps.image-name-and-tags.outputs.image_tags }}
+      
   

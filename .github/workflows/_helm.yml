@@ -1,10 +1,10 @@
-name: Build and Push Helm Charts
+name: Release Helm Charts
 
 on:
   workflow_call:
     inputs:
       chart:
-        description: 'The name of the Helm chart to build and push'
+        description: 'The name of the Helm chart to Release'
         required: true
         type: string
       DOCKER_HUB_BASE_PATH:
@@ -25,8 +25,8 @@ on:
         required: false
 
 jobs: 
-  build-and-push:
-    name: Build and Push
+  release:
+    name: Release
     runs-on: ubuntu-latest
     environment: ${{ inputs.ENV_NAME }}
     steps:
