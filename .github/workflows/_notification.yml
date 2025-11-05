@@ -59,6 +59,8 @@ jobs:
       - name: debug
         run: |
           echo "${{ steps.parse-message.outputs.parsed_msg }}"
+          pwd
+          ls -lha .
         
       - name: Send ${{ inputs.noti_type }} Notification
         run: |
