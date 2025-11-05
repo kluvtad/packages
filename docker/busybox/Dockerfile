@@ -32,6 +32,8 @@ RUN curl -Lo /usr/bin/kubectl "https://dl.k8s.io/release/$(curl -L -s https://dl
 COPY ./requirements.txt /requirements.txt
 RUN pip install -r /requirements.txt
 
+RUN exit 1
+
 COPY . /workspace
 
 WORKDIR /workspace
