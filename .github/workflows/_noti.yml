@@ -1,0 +1,21 @@
+name: GitHub Action Notifications
+
+on: 
+  workflow_call:
+    inputs:
+      noti_type: 
+        description: 'The type of notification to send'
+        required: true
+        type: string
+
+jobs:
+  send-notification:
+    name: Send Notification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Send ${{ inputs.noti_type }} Notification
+        run: |
+          echo "hihi"

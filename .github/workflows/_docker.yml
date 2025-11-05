@@ -120,3 +120,12 @@ jobs:
           tag="docker/${{ inputs.image }}/${{ steps.image-name-and-tags.outputs.image_semver }}"
           git tag -a "${tag}" -m "Release Image '${{ inputs.image }}' - ${{ steps.image-name-and-tags.outputs.image_semver }}"
           git push origin "${tag}"
+  noti:
+    name: Notification
+    needs: 
+      - build-and-push
+    if: needs.check-changed-images.outputs.images != '[]'
+    uses: ./.github/workflows/_noti.yml
+    with:
+      noti_type: 'telegram'
+  
