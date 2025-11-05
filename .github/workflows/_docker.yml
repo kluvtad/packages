@@ -127,9 +127,10 @@ jobs:
     name: Notification
     needs: 
       - release
-    if: always() && ${{ inputs.ENV_NAME }} == 'production'
+    if: always() && ${{ inputs.ENV_NAME  == 'production' }}
     uses: ./.github/workflows/_notification.yml
     with:
+      ENV_NAME: 'production'
       noti_type: 'telegram'
 
       TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID }}

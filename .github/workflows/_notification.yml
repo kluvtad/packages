@@ -3,6 +3,10 @@ name: GitHub Action Notifications
 on: 
   workflow_call:
     inputs:
+      ENV_NAME:
+        description: 'The environment name (production, dev)'
+        type: string
+        default: 'dev'
       noti_type: 
         description: 'The type of notification to send'
         required: true
@@ -37,6 +41,7 @@ jobs:
   send-notification:
     name: Send Notification
     runs-on: ubuntu-latest
+    environment: ${{ inputs.ENV_NAME }}
     container:
       image: golang:1.25.3-alpine
     steps:
