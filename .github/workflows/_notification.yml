@@ -45,17 +45,15 @@ jobs:
           apk add --no-cache curl
       - name: Checkout code
         uses: actions/checkout@v5
-        with:
-          path: ./.github/workflows/
 
       - name: Parse message
         id: parse-message
         run: |
           id=$RANDOM
           echo '${{ inputs.message }}' > ./message-$id.tpl
+          go run ./.github/workflows/lib/parse_template.go -f ./message-$id.tpl > ./message-$id-parsed.txt
 
-          echo "parsed_msg=$(go run ./lib/parse_template.go -f ./message-$id.tpl)" >> $GITHUB_OUTPUT
-      
+          echo "parsed_msg=$(cat ./message-$id-parsed.txt)" >> $GITHUB_OUTPUT
       - name: debug
         run: |
           echo "${{ steps.parse-message.outputs.parsed_msg }}"
@@ -66,6 +64,7 @@ jobs:
         run: |
           if [ "${{ inputs.noti_type }}" = "telegram" ]; then
             curl --location --globoff --request GET 'https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage' \
+              --fail \
               --header 'Content-Type: application/json' \
               --data '{
                   "chat_id": "{{ inputs.TELEGRAM_CHAT_ID }}",
