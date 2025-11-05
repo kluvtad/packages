@@ -12,17 +12,66 @@ on:
         required: true
         type: string
 
+      TELEGRAM_CHAT_ID:
+        description: 'Telegram Chat ID'
+        required: false
+        type: string
+      TELEGRAM_THREAD_ID:
+        description: 'Telegram Thread ID'
+        required: false
+        type: string
+
+      TELEGRAM_PARSE_MODE:
+        description: 'Telegram Parse Mode'
+        required: false
+        type: string
+        default: 'MarkdownV2'
+    
+    secrets:
+      TELEGRAM_BOT_TOKEN:
+        description: 'Telegram Bot Token'
+        required: false
+      
+
 jobs:
   send-notification:
     name: Send Notification
     runs-on: ubuntu-latest
+    container:
+      image: golang:1.25.3-alpine
     steps:
+      - name: Presiquisites
+        run: |
+          apk add --no-cache curl
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+        with:
+          path: ./.github/workflows/
 
+      - name: Parse message
+        id: parse-message
+        run: |
+          id=$RANDOM
+          echo '${{ inputs.message }}' > ./message-$id.tpl
+
+          echo "parsed_msg=$(go run ./lib/parse_template.go -f ./message-$id.tpl)" >> $GITHUB_OUTPUT
+      
+      - name: debug
+        run: |
+          echo "${{ steps.parse-message.outputs.parsed_msg }}"
+        
       - name: Send ${{ inputs.noti_type }} Notification
         run: |
-          echo "${{ inputs.message }}"
-  
-          ls -lha ./
-          pwd
+          if [ "${{ inputs.noti_type }}" = "telegram" ]; then
+            curl --location --globoff --request GET 'https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage' \
+              --header 'Content-Type: application/json' \
+              --data '{
+                  "chat_id": "{{ inputs.TELEGRAM_CHAT_ID }}",
+                  "message_thread_id": "{{ inputs.TELEGRAM_THREAD_ID }}",
+                  "parse_mode": "${{ inputs.TELEGRAM_PARSE_MODE }}",
+                  "text": "${{ steps.parse-message.outputs.parsed_msg }}"
+              }'
+          else
+            echo "Notification type ${{ inputs.noti_type }} is not supported."
+            exit 1
+          fi
