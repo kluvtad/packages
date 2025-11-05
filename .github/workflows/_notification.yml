@@ -56,15 +56,13 @@ jobs:
           echo "parsed_msg=$(cat ./message-$id-parsed.txt)" >> $GITHUB_OUTPUT
       - name: debug
         run: |
-          echo "${{ steps.parse-message.outputs.parsed_msg }}"
-          pwd
-          ls -lha .
+          echo '${{ steps.parse-message.outputs.parsed_msg }}'
         
       - name: Send ${{ inputs.noti_type }} Notification
         run: |
           if [ "${{ inputs.noti_type }}" = "telegram" ]; then
             curl --location --globoff --request GET 'https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage' \
-              --fail \
+              --fail-with-body \
               --header 'Content-Type: application/json' \
               --data '{
                   "chat_id": "{{ inputs.TELEGRAM_CHAT_ID }}",
