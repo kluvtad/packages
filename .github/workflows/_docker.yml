@@ -127,7 +127,7 @@ jobs:
     name: Notification
     needs: 
       - release
-    if: ${{ inputs.ENV_NAME }} == 'production'
+    if: ${{ inputs.ENV_NAME }} == 'dev'
     uses: ./.github/workflows/_notification.yml
     with:
       noti_type: 'telegram'
