@@ -243,4 +243,14 @@ entries:
         - oci://registry-1.docker.io/kluvtad/postgresql-ha:0.5.1-helm
       sources:
         - https://github.com/kluvtad/packages/tree/fccc564f1f4a547ea929c406b64cc3982e6f14ca/helm/postgresql-ha
-generated: 2025-10-27T16:38:41Z
+    - apiVersion: v2
+      name: postgresql-ha
+      version: 0.6.0-helm
+      appVersion: "null"
+      description: A Helm chart for Kubernetes
+      digest: d7fad8efdf6d8088d9f8ae66f476fd5d1a6527db8295d44f15d7e0be3511d8ac
+      urls:
+        - oci://ghcr.io/kluvtad/packages/helm/postgresql-ha:0.6.0-helm
+      sources:
+        - https://github.com/kluvtad/packages/tree/29e72583a5bf90b728c014f4046cd4edb5f419e8/helm/postgresql-ha
+generated: 2025-11-05T17:47:50Z
