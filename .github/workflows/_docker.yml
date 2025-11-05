@@ -127,7 +127,7 @@ jobs:
     name: Notification
     needs: 
       - release
-    if: ${{ inputs.ENV_NAME }} == 'dev'
+    if: ${{ inputs.ENV_NAME == 'production' }}
     uses: ./.github/workflows/_notification.yml
     with:
       noti_type: 'telegram'
@@ -135,7 +135,7 @@ jobs:
       TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID }}
       TELEGRAM_THREAD_ID: ${{ vars.TELEGRAM_THREAD_ID }}
       message: |
-        ️{{- if ${{ needs.release.status }} == 'success' }}✅{{- else }}❌{{- end }}
+        ️{{- if ${{ needs.release.result }} == 'success' }}✅{{- else }}❌{{- end }}
         Docker Image **${{ inputs.image }}** released: `${{ needs.release.outputs.image_tag }}`
     secrets:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
