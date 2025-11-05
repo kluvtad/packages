@@ -25,4 +25,4 @@ jobs:
           echo "${{ inputs.message }}"
   
           ls -lha ./
-          pwd  
+          pwd
