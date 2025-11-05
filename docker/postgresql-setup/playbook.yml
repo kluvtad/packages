@@ -14,26 +14,27 @@
       retries: 4
       delay: 30
 
-    - name: "Users setup"
-      block:
-        - find:
-            paths: /workspace/configs/users
-            patterns: "*.yml"
-          register: user_files_raw
-        - include_role:
-            name: user
-          vars:
-            user_file: "{{ item }}"
-          loop: "{{ user_files_raw.files | map(attribute='path') | list }}"
+    - name: "Find configuration files"
+      block: 
+      - name: Find user configuration files
+        file:
+          paths: /workspace/configs/users
+          patterns: "*.yml"
+        register: user_files_raw
+      - name: Find database configuration files
+        file:
+          paths: /workspace/configs/databases
+          patterns: "*.yml"
+        register: database_files_raw
+
+      - include_role:
+          name: user
+        vars:
+          user_file: "{{ item }}"
+        loop: "{{ user_files_raw.files | map(attribute='path') | list }}"
     
-    - name: "Databases setup"
-      block:
-        - find:
-            paths: /workspace/configs/databases
-            patterns: "*.yml"
-          register: database_files_raw
-        - include_role:
-            name: database
-          vars:
-            database_file: "{{ item }}"
-          loop: "{{ database_files_raw.files | map(attribute='path') | list }}"
+      - include_role:
+          name: database
+        vars:
+          database_file: "{{ item }}"
+        loop: "{{ database_files_raw.files | map(attribute='path') | list }}"
