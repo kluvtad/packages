@@ -29,6 +29,9 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     environment: ${{ inputs.ENV_NAME }}
+    outputs:
+      image_name: ${{ steps.image-name-and-tags.outputs.image_name }}
+      image_tag: ${{ steps.image-name-and-tags.outputs.image_semver }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -129,7 +132,4 @@ jobs:
     with:
       noti_type: 'telegram'
       message: |
-        Docker Image ${{ inputs.image }} released with tags:
-        ${{ steps.image-name-and-tags.outputs.image_tags }}
-      
-  
+        Docker Image **${{ inputs.image }}** released: `${{ needs.release.outputs.image_tag }}`
