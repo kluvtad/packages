@@ -1,6 +1,7 @@
 FROM python:3.12.0-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
+RUN exit 1
 
 RUN apt update && \
     apt-get install -y \
@@ -31,8 +32,6 @@ RUN curl -Lo /usr/bin/kubectl "https://dl.k8s.io/release/$(curl -L -s https://dl
 # http-logger
 COPY ./requirements.txt /requirements.txt
 RUN pip install -r /requirements.txt
-
-RUN exit 1
 
 COPY . /workspace
 
