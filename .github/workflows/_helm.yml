@@ -23,6 +23,10 @@ on:
       DOCKER_HUB_PASSWORD:
         description: 'Docker Hub password'
         required: false
+      
+      TELEGRAM_BOT_TOKEN:
+        description: 'Telegram Bot Token'
+        required: false
 
 jobs: 
   release:
@@ -153,3 +157,22 @@ jobs:
           git add ${{ steps.chart-info.outputs.index_file }}
           git commit -m "Update ${{ steps.chart-info.outputs.index_file }}: ${{ inputs.chart }} - ${{ steps.chart-info.outputs.chart_version }}"
           git push origin main
+  noti:
+    name: Notification
+    needs: 
+      - release
+    if: always() && inputs.ENV_NAME  == 'production'
+    uses: ./.github/workflows/_notification.yml
+    with:
+      noti_type: 'telegram'
+
+      TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID }}
+      TELEGRAM_THREAD_ID: ${{ vars.TELEGRAM_THREAD_ID }}
+      message: |
+        ️{{- if eq "${{ needs.release.result }}" "success" -}}
+        ✅ Helm Package *${{ inputs.image }}* released successfully: `${{ needs.release.outputs.image_tag }}`
+        {{- else -}}
+        ❌ Helm Package *${{ inputs.image }}* failed to release \- [View Details](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+        {{- end -}}
+    secrets:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}

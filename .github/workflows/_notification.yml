@@ -4,9 +4,9 @@ on:
   workflow_call:
     inputs:
       ENV_NAME:
-        description: 'The environment name (production, dev)'
+        description: 'The environment name'
         type: string
-        default: 'dev'
+        default: 'noti'
       noti_type: 
         description: 'The type of notification to send'
         required: true
@@ -47,7 +47,7 @@ jobs:
     steps:
       - name: Presiquisites
         run: |
-          apk add --no-cache curl
+          apk add --no-cache curl jq
       - name: Checkout code
         uses: actions/checkout@v5
 
@@ -55,26 +55,38 @@ jobs:
         id: parse-message
         run: |
           id=$RANDOM
-          echo '${{ inputs.message }}' > ./message-$id.tpl
-          go run ./.github/workflows/lib/parse_template.go -f ./message-$id.tpl > ./message-$id-parsed.txt
+          
+          cat > ./message-$id.tpl <<'EOF'
+          ${{ inputs.message }}
+          EOF
 
-          echo "parsed_msg=$(cat ./message-$id-parsed.txt)" >> $GITHUB_OUTPUT
-      - name: debug
-        run: |
-          echo '${{ steps.parse-message.outputs.parsed_msg }}'
-        
+          echo Message template:
+          cat ./message-$id.tpl
+
+          echo Parsed message:
+          go run ./.github/workflows/lib/parse_template.go -f ./message-$id.tpl > ./message-$id-parsed.txt
+          cat ./message-$id-parsed.txt && echo
+
+          echo Telegram message data:
+          echo '{
+                  "chat_id": "${{ inputs.TELEGRAM_CHAT_ID }}",
+                  "message_thread_id": "${{ inputs.TELEGRAM_THREAD_ID }}",
+                  "parse_mode": "${{ inputs.TELEGRAM_PARSE_MODE }}"
+              }' | jq > ./message-$id-data.json
+          
+          jq --arg data "$(cat ./message-$id-parsed.txt)" '.text = $data' ./message-$id-data.json > ./message-$id-data-tmp.json
+          mv ./message-$id-data-tmp.json ./message-$id-data.json
+
+          cat ./message-$id-data.json
+          echo "data_file=$(realpath ./message-$id-data.json)" >> $GITHUB_OUTPUT
+
       - name: Send ${{ inputs.noti_type }} Notification
         run: |
           if [ "${{ inputs.noti_type }}" = "telegram" ]; then
             curl --location --globoff --request GET 'https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage' \
               --fail-with-body \
               --header 'Content-Type: application/json' \
-              --data '{
-                  "chat_id": "{{ inputs.TELEGRAM_CHAT_ID }}",
-                  "message_thread_id": "{{ inputs.TELEGRAM_THREAD_ID }}",
-                  "parse_mode": "${{ inputs.TELEGRAM_PARSE_MODE }}",
-                  "text": "${{ steps.parse-message.outputs.parsed_msg }}"
-              }'
+              --data '@${{ steps.parse-message.outputs.data_file }}'
           else
             echo "Notification type ${{ inputs.noti_type }} is not supported."
             exit 1
