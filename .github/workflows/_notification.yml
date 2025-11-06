@@ -68,13 +68,17 @@ jobs:
           cat ./message-$id-parsed.txt
 
           echo Telegram message data:
-          echo "{
-                  \"chat_id\": \"${{ inputs.TELEGRAM_CHAT_ID }}\",
-                  \"message_thread_id\": \"${{ inputs.TELEGRAM_THREAD_ID }}\",
-                  \"parse_mode\": \"${{ inputs.TELEGRAM_PARSE_MODE }}\",
-              }" | jq > ./message-$id-data.json
-          jq --arg data "$(cat ./message-$id-parsed.txt)" '.text = $data' ./message-$id-data.json > ./message-$id-data.json
+          echo '{
+                  "chat_id": "${{ inputs.TELEGRAM_CHAT_ID }}",
+                  "message_thread_id": "${{ inputs.TELEGRAM_THREAD_ID }}",
+                  "parse_mode": "${{ inputs.TELEGRAM_PARSE_MODE }}",
+              }' | jq > ./message-$id-data.json
+          echo hihi
           cat ./message-$id-data.json
+          
+          jq --arg data "$(cat ./message-$id-parsed.txt)" '.text = $data' ./message-$id-data.json > ./message-$id-data-new.json
+          echo haha
+          cat ./message-$id-data-new.json
           echo "data_file=$(realpath ./message-$id-data.json)" >> $GITHUB_OUTPUT
 
       - name: Send ${{ inputs.noti_type }} Notification
