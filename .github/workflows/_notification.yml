@@ -55,7 +55,10 @@ jobs:
         id: parse-message
         run: |
           id=$RANDOM
-          echo '${{ inputs.message }}' > ./message-$id.tpl
+          
+          cat > ./message-$id.tpl <<EOF
+          ${{ inputs.message }}
+          EOF
 
           echo Message template:
           cat ./message-$id.tpl
