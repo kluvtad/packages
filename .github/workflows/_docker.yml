@@ -140,9 +140,9 @@ jobs:
       TELEGRAM_THREAD_ID: ${{ vars.TELEGRAM_THREAD_ID }}
       message: |
         ️{{- if eq "${{ needs.release.result }}" "success" -}}
-        ✅ Docker Image *'${{ inputs.image }}'* released successfully: `${{ needs.release.outputs.image_tag }}`
+        ✅ Docker Image *${{ inputs.image }}* released successfully: `${{ needs.release.outputs.image_tag }}`
         {{- else -}}
-        ❌ Docker Image *'${{ inputs.image }}'* failed to release
+        ❌ Docker Image *${{ inputs.image }}* failed to release
         {{- end -}}
     secrets:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
