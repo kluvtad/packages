@@ -24,6 +24,10 @@ on:
         description: 'Docker Hub password'
         required: false
 
+      TELEGRAM_BOT_TOKEN:
+        description: 'Telegram Bot Token'
+        required: false
+
 jobs:
   release:
     name: Release

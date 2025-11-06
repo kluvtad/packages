@@ -98,3 +98,4 @@ jobs:
       DOCKER_HUB_BASE_PATH: kluvtad
     secrets:
       DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
