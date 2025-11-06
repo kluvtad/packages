@@ -64,8 +64,9 @@ jobs:
           cat ./message-$id.tpl
 
           echo Parsed message:
-          go run ./.github/workflows/lib/parse_template.go -f ./message-$id.tpl > ./message-$id-parsed.txt
-          cat ./message-$id-parsed.txt
+          go run ./.github/workflows/lib/parse_template.go -f ./message-$id.tpl > ./message-$id-parsed-tmp.txt
+          mv ./message-$id-parsed-tmp.txt ./message-$id-parsed.txt
+          cat ./message-$id-parsed.txt && echo
 
           echo Telegram message data:
           echo '{
