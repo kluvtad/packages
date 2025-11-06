@@ -65,11 +65,12 @@ jobs:
 
           go run ./.github/workflows/lib/parse_template.go -f ./message-$id.tpl > ./message-$id-parsed.txt
 
-          echo "parsed_msg=$(cat ./message-$id-parsed.txt)" >> $GITHUB_OUTPUT
+          echo "parsed_file='$(realpath ./message-$id-parsed.txt)'" >> $GITHUB_OUTPUT
       - name: debug
         run: |
-          echo '${{ steps.parse-message.outputs.parsed_msg }}'
-        
+          echo '${{ steps.parse-message.outputs.parsed_file }}'
+          cat ${{ steps.parse-message.outputs.parsed_file }}
+
       - name: Send ${{ inputs.noti_type }} Notification
         run: |
           if [ "${{ inputs.noti_type }}" = "telegram" ]; then
@@ -80,7 +81,7 @@ jobs:
                   "chat_id": "{{ inputs.TELEGRAM_CHAT_ID }}",
                   "message_thread_id": "{{ inputs.TELEGRAM_THREAD_ID }}",
                   "parse_mode": "${{ inputs.TELEGRAM_PARSE_MODE }}",
-                  "text": "${{ steps.parse-message.outputs.parsed_msg }}"
+                  "text": "$(cat ${{ steps.parse-message.outputs.parsed_file }})"
               }'
           else
             echo "Notification type ${{ inputs.noti_type }} is not supported."
