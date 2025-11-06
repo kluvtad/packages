@@ -131,7 +131,7 @@ jobs:
     name: Notification
     needs: 
       - release
-    if: always() && inputs.ENV_NAME  == 'dev'
+    if: always() && inputs.ENV_NAME  == 'production'
     uses: ./.github/workflows/_notification.yml
     with:
       noti_type: 'telegram'
@@ -142,7 +142,7 @@ jobs:
         ️{{- if eq "${{ needs.release.result }}" "success" -}}
         ✅ Docker Image *${{ inputs.image }}* released successfully: `${{ needs.release.outputs.image_tag }}`
         {{- else -}}
-        ❌ Docker Image *${{ inputs.image }}* failed to release \\\- [View Details](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+        ❌ Docker Image *${{ inputs.image }}* failed to release \- [View Details](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
         {{- end -}}
     secrets:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
