@@ -2,7 +2,6 @@ FROM python:3.12.0-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN exit 1
 RUN apt update && \
     apt-get install -y \
     wget iputils-ping procps git-all curl jq bash telnet dnsutils \
