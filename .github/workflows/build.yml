@@ -86,7 +86,9 @@ jobs:
 
   helm-chart: 
     name: Helm Charts
-    needs: check-changed-charts
+    needs: 
+      - init-setup
+      - check-changed-charts
     strategy:
       matrix: 
         chart: ${{fromJson(needs.check-changed-charts.outputs.charts)}}
