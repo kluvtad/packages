@@ -78,8 +78,8 @@ jobs:
               --fail-with-body \
               --header 'Content-Type: application/json' \
               --data '{
-                  "chat_id": "{{ inputs.TELEGRAM_CHAT_ID }}",
-                  "message_thread_id": "{{ inputs.TELEGRAM_THREAD_ID }}",
+                  "chat_id": "${{ inputs.TELEGRAM_CHAT_ID }}",
+                  "message_thread_id": "${{ inputs.TELEGRAM_THREAD_ID }}",
                   "parse_mode": "${{ inputs.TELEGRAM_PARSE_MODE }}",
                   "text": "$(cat ${{ steps.parse-message.outputs.parsed_file }})"
               }'
