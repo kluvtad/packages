@@ -64,8 +64,7 @@ jobs:
           cat ./message-$id.tpl
 
           echo Parsed message:
-          go run ./.github/workflows/lib/parse_template.go -f ./message-$id.tpl > ./message-$id-parsed-tmp.txt
-          mv ./message-$id-parsed-tmp.txt ./message-$id-parsed.txt
+          go run ./.github/workflows/lib/parse_template.go -f ./message-$id.tpl > ./message-$id-parsed.txt
           cat ./message-$id-parsed.txt && echo
 
           echo Telegram message data:
@@ -75,7 +74,9 @@ jobs:
                   "parse_mode": "${{ inputs.TELEGRAM_PARSE_MODE }}"
               }' | jq > ./message-$id-data.json
           
-          jq --arg data "$(cat ./message-$id-parsed.txt)" '.text = $data' ./message-$id-data.json > ./message-$id-data.json
+          jq --arg data "$(cat ./message-$id-parsed.txt)" '.text = $data' ./message-$id-data.json > ./message-$id-data-tmp.json
+          mv ./message-$id-data-tmp.json ./message-$id-data.json
+
           cat ./message-$id-data.json
           echo "data_file=$(realpath ./message-$id-data.json)" >> $GITHUB_OUTPUT
 
