@@ -144,5 +144,6 @@ jobs:
         {{- else }}
         ❌ Docker Image **${{ inputs.image }}** failed to release
         {{- end }}
+        END
     secrets:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}

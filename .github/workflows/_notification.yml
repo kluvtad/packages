@@ -77,12 +77,12 @@ jobs:
             curl --location --globoff --request GET 'https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage' \
               --fail-with-body \
               --header 'Content-Type: application/json' \
-              --data '{
-                  "chat_id": "${{ inputs.TELEGRAM_CHAT_ID }}",
-                  "message_thread_id": "${{ inputs.TELEGRAM_THREAD_ID }}",
-                  "parse_mode": "${{ inputs.TELEGRAM_PARSE_MODE }}",
-                  "text": "$(cat ${{ steps.parse-message.outputs.parsed_file }})"
-              }'
+              --data "{
+                  \"chat_id\": \"${{ inputs.TELEGRAM_CHAT_ID }}\",
+                  \"message_thread_id\": \"${{ inputs.TELEGRAM_THREAD_ID }}\",
+                  \"parse_mode\": \"${{ inputs.TELEGRAM_PARSE_MODE }}\",
+                  \"text\": \"$(cat ${{ steps.parse-message.outputs.parsed_file }})\"
+              }"
           else
             echo "Notification type ${{ inputs.noti_type }} is not supported."
             exit 1
