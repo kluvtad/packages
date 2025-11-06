@@ -74,7 +74,7 @@ jobs:
       - name: Send ${{ inputs.noti_type }} Notification
         run: |
           if [ "${{ inputs.noti_type }}" = "telegram" ]; then
-            curl --location --globoff --request GET 'https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage' \
+            curl --location --globoff --request GET 'https://api.telegram.org/bot${{ inputs.TELEGRAM_BOT_TOKEN }}/sendMessage' \
               --fail-with-body \
               --header 'Content-Type: application/json' \
               --data '{
