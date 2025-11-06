@@ -4,9 +4,9 @@ on:
   workflow_call:
     inputs:
       ENV_NAME:
-        description: 'The environment name (production, dev)'
+        description: 'The environment name'
         type: string
-        default: 'dev'
+        default: 'noti'
       noti_type: 
         description: 'The type of notification to send'
         required: true
@@ -56,6 +56,10 @@ jobs:
         run: |
           id=$RANDOM
           echo '${{ inputs.message }}' > ./message-$id.tpl
+
+          echo Message template:
+          cat ./message-$id.tpl
+
           go run ./.github/workflows/lib/parse_template.go -f ./message-$id.tpl > ./message-$id-parsed.txt
 
           echo "parsed_msg=$(cat ./message-$id-parsed.txt)" >> $GITHUB_OUTPUT
