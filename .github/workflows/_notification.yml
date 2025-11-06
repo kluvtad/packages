@@ -65,7 +65,7 @@ jobs:
 
           go run ./.github/workflows/lib/parse_template.go -f ./message-$id.tpl > ./message-$id-parsed.txt
 
-          echo "parsed_file='$(realpath ./message-$id-parsed.txt)'" >> $GITHUB_OUTPUT
+          echo "parsed_file=$(realpath ./message-$id-parsed.txt)" >> $GITHUB_OUTPUT
       - name: debug
         run: |
           echo '${{ steps.parse-message.outputs.parsed_file }}'
