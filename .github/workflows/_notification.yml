@@ -56,7 +56,7 @@ jobs:
         run: |
           id=$RANDOM
           
-          cat > ./message-$id.tpl <<EOF
+          cat > ./message-$id.tpl <<'EOF'
           ${{ inputs.message }}
           EOF
 
