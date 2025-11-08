@@ -77,6 +77,8 @@ jobs:
           jq --arg data "$(cat ./message-$id-parsed.txt)" '.text = $data' ./message-$id-data.json > ./message-$id-data-tmp.json
           mv ./message-$id-data-tmp.json ./message-$id-data.json
 
+          sed -i -e 's/\\/\\\\/g; s/-/\\-/g' ./message-$id-data.json
+
           cat ./message-$id-data.json
           echo "data_file=$(realpath ./message-$id-data.json)" >> $GITHUB_OUTPUT
 
