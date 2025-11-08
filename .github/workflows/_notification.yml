@@ -74,7 +74,7 @@ jobs:
                   "parse_mode": "${{ inputs.TELEGRAM_PARSE_MODE }}"
               }' | jq > ./message-$id-data.json
 
-          jq --arg data "$(cat ./message-$id-parsed.txt | sed -e 's/-/\\\\-/g')" '.text = $data' ./message-$id-data.json > ./message-$id-data-tmp.json
+          jq --arg data "$(cat ./message-$id-parsed.txt | sed -e 's/-/\\-/g')" '.text = $data' ./message-$id-data.json > ./message-$id-data-tmp.json
           mv ./message-$id-data-tmp.json ./message-$id-data.json
 
           cat ./message-$id-data.json
