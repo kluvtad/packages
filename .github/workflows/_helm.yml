@@ -172,7 +172,7 @@ jobs:
       TELEGRAM_THREAD_ID: ${{ vars.TELEGRAM_THREAD_ID }}
       message: |
         ️{{- if eq "${{ needs.release.result }}" "success" -}}
-        ✅ Helm Package *${{ inputs.chart }}* released successfully: `${{ needs.release.outputs.image_tag }}`
+        ✅ Helm Package *${{ inputs.chart }}* released successfully: `${{ needs.release.outputs.chart_version }}`
         {{- else -}}
         ❌ Helm Package *${{ inputs.chart }}* failed to release \- [View Details](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
         {{- end -}}
