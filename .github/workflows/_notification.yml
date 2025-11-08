@@ -73,11 +73,9 @@ jobs:
                   "message_thread_id": "${{ inputs.TELEGRAM_THREAD_ID }}",
                   "parse_mode": "${{ inputs.TELEGRAM_PARSE_MODE }}"
               }' | jq > ./message-$id-data.json
-          
-          jq --arg data "$(cat ./message-$id-parsed.txt)" '.text = $data' ./message-$id-data.json > ./message-$id-data-tmp.json
-          mv ./message-$id-data-tmp.json ./message-$id-data.json
 
-          sed -i -e 's/\\/\\\\/g; s/-/\\-/g' ./message-$id-data.json
+          jq --arg data "$(cat ./message-$id-parsed.txt | sed -e 's/-/\\\\-/g')" '.text = $data' ./message-$id-data.json > ./message-$id-data-tmp.json
+          mv ./message-$id-data-tmp.json ./message-$id-data.json
 
           cat ./message-$id-data.json
           echo "data_file=$(realpath ./message-$id-data.json)" >> $GITHUB_OUTPUT

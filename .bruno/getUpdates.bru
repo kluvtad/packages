@@ -1,0 +1,11 @@
+meta {
+  name: Get Updates
+  type: http
+  seq: 1
+}
+
+get {
+  url: https://api.telegram.org/bot{{TELE_BOTTOKEN}}/getUpdates
+  body: none
+  auth: none
+}

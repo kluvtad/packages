@@ -1,0 +1,20 @@
+meta {
+  name: Send Message
+  type: http
+  seq: 1
+}
+
+get {
+  url: https://api.telegram.org/bot{{TELE_BOTTOKEN}}/sendMessage
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "chat_id": "{{TELE_CHAT_ID}}",
+      "message_thread_id": "{{TELE_THREAD_ID}}",
+      "parse_mode": "MarkdownV2",
+      "text": "hihi"
+  }
+}
