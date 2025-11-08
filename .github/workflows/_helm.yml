@@ -33,6 +33,8 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     environment: ${{ inputs.ENV_NAME }}
+    outputs:
+      chart_version: ${{ steps.chart-info.outputs.chart_version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -170,9 +172,9 @@ jobs:
       TELEGRAM_THREAD_ID: ${{ vars.TELEGRAM_THREAD_ID }}
       message: |
         ️{{- if eq "${{ needs.release.result }}" "success" -}}
-        ✅ Helm Package *${{ inputs.image }}* released successfully: `${{ needs.release.outputs.image_tag }}`
+        ✅ Helm Package *${{ inputs.chart }}* released successfully: `${{ needs.release.outputs.image_tag }}`
         {{- else -}}
-        ❌ Helm Package *${{ inputs.image }}* failed to release \- [View Details](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+        ❌ Helm Package *${{ inputs.chart }}* failed to release \- [View Details](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
         {{- end -}}
     secrets:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
