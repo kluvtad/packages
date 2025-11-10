@@ -3,7 +3,9 @@ containers:
   - name: main
     image: "{{ .Values.setupJob.image.repository }}:{{ .Values.setupJob.image.tag }}"
     imagePullPolicy: {{ .Values.setupJob.image.pullPolicy }}
-    # command: ["tail", "-f", "/dev/null"]
+    {{- if .Values.setupJob.debug }}
+    command: ["tail", "-f", "/dev/null"]
+    {{- end }}
     {{- if .Values.users.existingPasswordSecret }} 
     envFrom:
       - secretRef:
