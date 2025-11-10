@@ -17,7 +17,7 @@ setupJob:
   annotations: {}
   image:
     repository: kluvtad/postgresql-setup
-    tag: 1.0.0
+    tag: 1.0.1
     pullPolicy: IfNotPresent
   debug: false
 
