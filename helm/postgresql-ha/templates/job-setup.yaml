@@ -3,7 +3,7 @@ containers:
   - name: main
     image: "{{ .Values.setupJob.image.repository }}:{{ .Values.setupJob.image.tag }}"
     imagePullPolicy: {{ .Values.setupJob.image.pullPolicy }}
-    command: ["tail", "-f", "/dev/null"]
+    # command: ["tail", "-f", "/dev/null"]
     env:
       - name: MASTER_PGHOST
         value: {{ include "postgresql-ha.fullname" $ }}-primary-0.{{ include "postgresql-ha.fullname" $ }}-primary-hl.{{ $.Release.Namespace }}.svc
