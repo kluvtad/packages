@@ -35,6 +35,7 @@ primary:
 users:
   existingConfigmap: ""
   config: {}
+  existingPasswordSecret: ""
 
 databases:
   existingConfigmap: ""

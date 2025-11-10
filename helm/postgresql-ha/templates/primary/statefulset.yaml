@@ -33,6 +33,11 @@ spec:
             - name: tcp-postgres
               containerPort: 5432
               protocol: TCP
+          {{- if $.Values.users.existingPasswordSecret }} 
+          envFrom:
+            - secretRef:
+                name: {{ tpl $.Values.users.existingPasswordSecret $ }}
+          {{- end }}
           env:
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
