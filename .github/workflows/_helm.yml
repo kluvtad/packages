@@ -174,7 +174,7 @@ jobs:
         ️{{- if eq "${{ needs.release.result }}" "success" -}}
         ✅ Helm Package *${{ inputs.chart }}* released successfully: `${{ needs.release.outputs.chart_version }}`
         {{- else -}}
-        ❌ Helm Package *${{ inputs.chart }}* failed to release \- [View Details](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+        ❌ Helm Package *${{ inputs.chart }}* failed to release - [View Details](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
         {{- end -}}
     secrets:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
