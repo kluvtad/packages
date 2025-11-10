@@ -4,6 +4,11 @@ containers:
     image: "{{ .Values.setupJob.image.repository }}:{{ .Values.setupJob.image.tag }}"
     imagePullPolicy: {{ .Values.setupJob.image.pullPolicy }}
     # command: ["tail", "-f", "/dev/null"]
+    {{- if .Values.users.existingPasswordSecret }} 
+    envFrom:
+      - secretRef:
+          name: {{ tpl .Values.users.existingPasswordSecret $ }}
+    {{- end }}
     env:
       - name: MASTER_PGHOST
         value: {{ include "postgresql-ha.fullname" $ }}-primary-0.{{ include "postgresql-ha.fullname" $ }}-primary-hl.{{ $.Release.Namespace }}.svc
