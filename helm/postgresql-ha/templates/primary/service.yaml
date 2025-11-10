@@ -8,9 +8,9 @@ spec:
   type: ClusterIP
   clusterIP: None
   ports:
-    - name: postgresql
+    - name: tcp-postgres
       port: 5432
-      targetPort: postgresql
+      targetPort: tcp-postgres
       protocol: TCP
   selector:
       {{- include "postgresql-ha.primary.selectorLabels" $ | nindent 6 }}
