@@ -162,6 +162,16 @@ entries:
         - oci://ghcr.io/kluvtad/packages/helm/busybox:1.3.0-helm
       sources:
         - https://github.com/kluvtad/packages/tree/a212053c8589d866fff25f18048c0d54019929ce/helm/busybox
+    - apiVersion: v2
+      name: busybox
+      version: 1.4.0-helm
+      appVersion: "null"
+      description: A Helm chart for Kubernetes
+      digest: 88d42ec5b6e2da4bc71afb9efc60160e8e4b352d00e4483d2bc3b0bc1babcdc6
+      urls:
+        - oci://registry-1.docker.io/kluvtad/busybox:1.4.0-helm
+      sources:
+        - https://github.com/kluvtad/packages/tree/3a1905360d518c8b744013b61502e409db038377/helm/busybox
   postgresql-ha:
     - apiVersion: v2
       name: postgresql-ha
@@ -383,4 +393,4 @@ entries:
         - oci://registry-1.docker.io/kluvtad/postgresql-ha:1.0.11-helm
       sources:
         - https://github.com/kluvtad/packages/tree/f3050fd849f1478c91f5e97f4b6b63daf81ad3cb/helm/postgresql-ha
-generated: 2025-11-10T09:31:57Z
+generated: 2025-11-12T02:08:46Z
