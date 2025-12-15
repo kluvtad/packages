@@ -12,8 +12,8 @@ tasks:
       - /workspace/storage-env-files/{{ .ENV_FILE }}
     preconditions:
       - sh: |
-          [[ -n "${GCS_BUCKET}" ]] && [[ -n "${GCS_CREDENTIALS_FILE}" ]]
-        msg: "Required environment variables (GCS_BUCKET, GCS_CREDENTIALS_FILE) are not set. Please check your .env file."
+          [[ -n "${GCS_BUCKET}" ]]
+        msg: "Required environment variables (GCS_BUCKET) are not set. Please check your .env file."
     vars: &common_vars
       GCS_BUCKET: '${GCS_BUCKET}'
       GCS_SUBPATH: '{{ .DB_TYPE }}/{{ .DB_ALIAS }}'
