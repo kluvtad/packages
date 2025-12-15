@@ -34,12 +34,9 @@ tasks:
         - DB_ALIAS
     dotenv: 
       - /workspace/storage-env-files/{{ .ENV_FILE }}
-    vars: 
-      <<: *common_vars
-      BACKUP_DIR_BASENAME:
-        sh: basename {{ .BACKUP_DIR }}
+    vars: *common_vars
     cmds: 
-      - gcloud storage cp -r {{ .BACKUP_DIR }}/* gs://{{ .GCS_BUCKET }}/{{ .DB_TYPE }}/{{ .DB_ALIAS }}/{{ .BACKUP_DIR_BASENAME }}/
+      - gcloud storage cp -r {{ .BACKUP_DIR }}/* gs://{{ .GCS_BUCKET }}/{{ .DB_TYPE }}/{{ .DB_ALIAS }}/$(basename {{ .BACKUP_DIR }})/
   clean:
     requries:
       vars: 
