@@ -1,0 +1,52 @@
+# DEPRECATED
+version: '3'
+
+tasks: 
+  init:
+    requires:
+      vars: 
+        - ENV_FILE
+        - DB_TYPE
+        - DB_ALIAS
+    dotenv:
+      - /workspace/storage-env-files/{{ .ENV_FILE }}
+    preconditions:
+      - sh: |
+          [[ -n "${GCS_BUCKET}" ]] && [[ -n "${GCS_CREDENTIALS_FILE}" ]]
+        msg: "Required environment variables (GCS_BUCKET, GCS_CREDENTIALS_FILE) are not set. Please check your .env file."
+    vars: &common_vars
+      GCS_BUCKET: '${GCS_BUCKET}'
+      GCS_SUBPATH: '{{ .DB_TYPE }}/{{ .DB_ALIAS }}'
+    cmds:
+      - |
+        if [[ -f "${GCS_CREDENTIALS_FILE}" ]]; then
+          gcloud auth login --cred-file=$GCS_CREDENTIALS_FILE
+        fi
+      - echo "GCS Storage initialized for bucket '{{ .GCS_BUCKET }}'."
+
+  upload:
+    requires:
+      vars: 
+        - ENV_FILE
+        - BACKUP_DIR
+        - DB_TYPE
+        - DB_ALIAS
+    dotenv: 
+      - /workspace/storage-env-files/{{ .ENV_FILE }}
+    vars: *common_vars
+    cmds: 
+      - gcloud storage cp -r {{ .BACKUP_DIR }}/* {{ .GCS_BUCKET }}/{{ .DB_TYPE }}/{{ .DB_ALIAS }}/$( basename {{ .BACKUP_DIR }})/
+
+  clean:
+    requries:
+      vars: 
+        - ENV_FILE
+        - DB_TYPE
+        - DB_ALIAS
+        - RETENTION_DAYS
+    dotenv: 
+      - /workspace/storage-env-files/{{ .ENV_FILE }}
+    vars: *common_vars
+    cmds: 
+      - |
+        echo Implement cleanup for GCS storage here!

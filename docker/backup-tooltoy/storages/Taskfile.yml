@@ -2,12 +2,13 @@ version: '3'
 
 includes:
   s3: ./s3.taskfile.yml
+  gcs: ./gcs.taskfile.yml
 
 tasks:
   upload:
     # ignore_error: true
     vars:
-      list_valid_types: "s3"
+      list_valid_types: "s3 gcs"
       _pretty_list_valid_types:
         sh: |
           echo {{ .list_valid_types }} | sed "s/^/\'/; s/ /\', \'/g; s/$/\'/"
@@ -37,4 +38,5 @@ tasks:
           ENV_FILE: '{{ .STORAGE_ENV_FILE }}'
           DB_TYPE: '{{ .DB_TYPE }}'
           DB_ALIAS: '{{ .DB_ALIAS }}'
+          RETENTION_DAYS: '{{ .RETENTION_DAYS }}'
         
