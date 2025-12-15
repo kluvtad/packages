@@ -35,7 +35,7 @@ tasks:
       - /workspace/storage-env-files/{{ .ENV_FILE }}
     vars: *common_vars
     cmds: 
-      - gcloud storage cp -r {{ .BACKUP_DIR }}/* gs://{{ .GCS_BUCKET }}/{{ .DB_TYPE }}/{{ .DB_ALIAS }}/$(basename {{ .BACKUP_DIR }})/
+      - gcloud storage cp -r {{ .BACKUP_DIR }}/* gs://{{ .GCS_BUCKET }}/{{ .GCS_SUBPATH }}/$(basename {{ .BACKUP_DIR }})/
   clean:
     requries:
       vars: 
@@ -45,7 +45,13 @@ tasks:
         - RETENTION_DAYS
     dotenv: 
       - /workspace/storage-env-files/{{ .ENV_FILE }}
-    vars: *common_vars
+    vars: 
+      GCS_BUCKET: '${GCS_BUCKET}'
+      GCS_SUBPATH: '{{ .DB_TYPE }}/{{ .DB_ALIAS }}'
+      DATE_THRESHOLD:
+        sh: date --date='{{ .RETENTION_DAYS }} days ago' +'%Y-%m-%dT%H:%M:%S'
     cmds: 
       - |
-        echo Implement cleanup for GCS storage here!
+        for obj in $(gcloud storage objects list gs://{{ .GCS_BUCKET }}/{{ .GCS_SUBPATH }}/** --raw --filter "timeFinalized<'{{ .DATE_THRESHOLD }}'" --format="list(name)" | sed 's/ - //g'); do
+          gcloud storage rm gs://{{ .GCS_BUCKET }}/$obj
+        done
