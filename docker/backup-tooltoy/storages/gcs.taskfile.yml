@@ -15,7 +15,8 @@ tasks:
           [[ -n "${GCS_BUCKET}" ]]
         msg: "Required environment variables (GCS_BUCKET) are not set. Please check your .env file."
     vars: &common_vars
-      GCS_BUCKET: '${GCS_BUCKET}'
+      GCS_BUCKET:
+        sh: echo ${GCS_BUCKET}
       GCS_SUBPATH: '{{ .DB_TYPE }}/{{ .DB_ALIAS }}'
     cmds:
       - |
@@ -33,10 +34,12 @@ tasks:
         - DB_ALIAS
     dotenv: 
       - /workspace/storage-env-files/{{ .ENV_FILE }}
-    vars: *common_vars
+    vars: 
+      <<: *common_vars
+      BACKUP_DIR_BASENAME:
+        sh: basename {{ .BACKUP_DIR }}
     cmds: 
-      - gcloud storage cp -r {{ .BACKUP_DIR }}/* {{ .GCS_BUCKET }}/{{ .DB_TYPE }}/{{ .DB_ALIAS }}/$( basename {{ .BACKUP_DIR }})/
-
+      - gcloud storage cp -r {{ .BACKUP_DIR }}/* gs://{{ .GCS_BUCKET }}/{{ .DB_TYPE }}/{{ .DB_ALIAS }}/{{ .BACKUP_DIR_BASENAME }}/
   clean:
     requries:
       vars: 
