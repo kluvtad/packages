@@ -15,8 +15,7 @@ tasks:
           [[ -n "${GCS_BUCKET}" ]]
         msg: "Required environment variables (GCS_BUCKET) are not set. Please check your .env file."
     vars: &common_vars
-      GCS_BUCKET:
-        sh: echo ${GCS_BUCKET}
+      GCS_BUCKET: '${GCS_BUCKET}'
       GCS_SUBPATH: '{{ .DB_TYPE }}/{{ .DB_ALIAS }}'
     cmds:
       - |
