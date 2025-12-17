@@ -1,0 +1,31 @@
+version: '3'
+
+tasks:
+  backup:
+    requires:
+      vars:
+        - BACKUP_ID
+        - BACKUP_DIR
+        - KUBE_VOLUME_SNAPSHOT_CLASS
+
+        - KUBE_PVC_NAMESPACE
+        - KUBE_PVC_NAME
+    preconditions:
+      - sh: kubectl get pvc {{ .KUBE_PVC_NAME }} -n {{ .KUBE_PVC_NAMESPACE }}
+        msg: PVC '{{ .KUBE_PVC_NAME }}' not found in namespace '{{ .KUBE_PVC_NAMESPACE }}'.
+    cmds: 
+      - |
+        cat > /tmp/vs.yaml <<- "EOF"
+        apiVersion: snapshot.storage.k8s.io/v1
+        kind: VolumeSnapshot
+        metadata:
+          name: {{ .KUBE_PVC_NAME }}
+          namespace: {{ .KUBE_PVC_NAMESPACE }}
+        spec:
+          volumeSnapshotClassName: {{ .KUBE_VOLUME_SNAPSHOT_CLASS }}
+          source:
+            persistentVolumeClaimName: {{ .KUBE_PVC_NAME }}
+        EOF
+      - |
+        kubectl apply -f /tmp/vs.yaml
+      # - defer: kubectl delete -f /tmp/vs.yaml

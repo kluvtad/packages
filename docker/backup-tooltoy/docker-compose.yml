@@ -4,10 +4,23 @@ services:
     volumes:
       # volumes for dev
       - .:/workspace
+      - ~/.kube:/tmp/.kube:ro
+      - ~/.config/gcloud:/tmp/gcloud:ro
     entrypoint: 
-      - tail
-      - -f
-      - /dev/null
+      - bash
+      - -c
+      - |
+        cp -r /tmp/.kube /root/.kube
+        
+        mkdir /root/.config
+        cp -r /tmp/gcloud /root/.config/gcloud
+        
+        if [ -n "$KUBECONTEXT" ]; then
+          kubectl config use-context "$KUBECONTEXT"
+        fi
+
+        echo "Starting backup-tooltoy with dev mode..."
+        tail -f /dev/null
     env_file:
       - .env
     extra_hosts:

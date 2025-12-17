@@ -19,26 +19,19 @@ vars:
 tasks:
   run:
     vars:
-      list_valid_types: "postgresql edgedb kvrocks sealedSecrets"
-      _pretty_list_valid_types:
-        sh: |
-          echo {{ .list_valid_types }} | sed "s/^/\'/; s/ /\', \'/g; s/$/\'/"
       list_storage_env_files:
         sh: "ls {{ .STORAGE_ENV_DIR }}"
           
     requires:
       vars:
-        - DB_TYPE
-    preconditions:
-      - sh: |
-          [[ "{{ .list_valid_types }}" =~ (^|[[:space:]]){{ .DB_TYPE }}($|[[:space:]]) ]]
-        msg: "Invalid value for `DB_TYPE`: '{{ .DB_TYPE }}'. Expected one of: {{ ._pretty_list_valid_types }}."
+        - name: DB_TYPE
+          enum: ['postgresql', 'sealedSecrets', 'pvc']
     cmds:
       - mkdir -p {{ .BACKUP_DIR }}
       - defer: rm -rf {{ .BACKUP_DIR }}
       - task: "databases:{{ .DB_TYPE }}:backup"
-      - for:
-          var: list_storage_env_files
-        task: storages:upload
-        vars:
-          STORAGE_ENV_FILE: '{{ .ITEM }}'
+      # - for:
+      #     var: list_storage_env_files
+      #   task: storages:upload
+      #   vars:
+      #     STORAGE_ENV_FILE: '{{ .ITEM }}'
