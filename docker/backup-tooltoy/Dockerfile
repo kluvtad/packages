@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y curl iputils-ping telnet \
 # Taskfile
 # TASK_X_ENV_PRECEDENCE=1 - https://taskfile.dev/experiments/env-precedence
 ENV TASK_X_ENV_PRECEDENCE=1
-RUN curl --location https://taskfile.dev/install.sh | sh /dev/stdin -d v3.41.0 -b /usr/local/bin
+RUN curl --location https://taskfile.dev/install.sh | sh /dev/stdin -d v3.45.5 -b /usr/local/bin
 
 # https://cloud.google.com/sdk/docs/install#deb
 RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
