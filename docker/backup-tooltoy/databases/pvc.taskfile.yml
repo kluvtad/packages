@@ -14,7 +14,7 @@ tasks:
       - sh: kubectl get pvc {{ .KUBE_PVC_NAME }} -n {{ .KUBE_PVC_NAMESPACE }}
         msg: PVC '{{ .KUBE_PVC_NAME }}' not found in namespace '{{ .KUBE_PVC_NAMESPACE }}'.
     vars:
-      KUBE_VOLUME_SNAPSHOT_NAME: "{{ .KUBE_PVC_NAME }}-{{ uuid }}"
+      KUBE_VOLUME_SNAPSHOT_NAME: '{{ .KUBE_PVC_NAME }}-{{ .BACKUP_ID | replace "_" "-" }}'
     cmds: 
       - |
         cat > /tmp/vs.yaml <<- "EOF"
@@ -28,13 +28,15 @@ tasks:
           source:
             persistentVolumeClaimName: {{ .KUBE_PVC_NAME }}
         EOF
-      # - defer: rm -f /tmp/vs.yaml
-      # - |
-      #   kubectl apply -f /tmp/vs.yaml
-      # - defer: kubectl delete -f /tmp/vs.yaml
-      # - |
-      #   # Wait until the VolumeSnapshot is ready to use
-      #   until kubectl get volumesnapshot {{ .KUBE_PVC_NAME }}-test-2 -n {{ .KUBE_PVC_NAMESPACE }} -o jsonpath='{.status.readyToUse}' | grep true; do
-      #     echo "Waiting for VolumeSnapshot to be ready..."
-      #     sleep 10
-      #   done
+      - defer: rm -f /tmp/vs.yaml
+      - |
+        kubectl apply -f /tmp/vs.yaml
+      - defer: kubectl delete -f /tmp/vs.yaml
+      - |
+        # Wait until the VolumeSnapshot is ready to use
+        until kubectl get volumesnapshot {{ .KUBE_VOLUME_SNAPSHOT_NAME }} -n {{ .KUBE_PVC_NAMESPACE }} -o jsonpath='{.status.readyToUse}' | grep true; do
+          echo "Waiting for VolumeSnapshot to be ready..."
+          sleep 10
+        done
+        echo "VolumeSnapshot is ready to use."
+      - 
