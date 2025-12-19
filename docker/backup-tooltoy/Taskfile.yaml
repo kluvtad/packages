@@ -15,13 +15,11 @@ vars:
       echo $(date '+%y-%m-%dt%H-%M-%Sz')_$(openssl rand -hex 5)
   BACKUP_DIR: "/data/{{ .BACKUP_ID }}"
   STORAGE_ENV_DIR: "/workspace/storage-env-files"
+  STORAGE_ENV_FILES: 
+    sh: "ls {{ .STORAGE_ENV_DIR }}"
 
 tasks:
   run:
-    vars:
-      list_storage_env_files:
-        sh: "ls {{ .STORAGE_ENV_DIR }}"
-          
     requires:
       vars:
         - name: DB_TYPE
@@ -30,8 +28,8 @@ tasks:
       - mkdir -p {{ .BACKUP_DIR }}
       - defer: rm -rf {{ .BACKUP_DIR }}
       - task: "databases:{{ .DB_TYPE }}:backup"
-      # - for:
-      #     var: list_storage_env_files
-      #   task: storages:upload
-      #   vars:
-      #     STORAGE_ENV_FILE: '{{ .ITEM }}'
+      - for:
+          var: STORAGE_ENV_FILES
+        task: storages:upload
+        vars:
+          STORAGE_ENV_FILE: '{{ .ITEM }}'

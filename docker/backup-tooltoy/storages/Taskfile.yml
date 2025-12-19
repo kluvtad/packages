@@ -5,8 +5,36 @@ includes:
   gcs: ./gcs.taskfile.yml
 
 tasks:
+  _upload:
+    internal: true
+    requires:
+      vars:
+        - ENV_FILE
+        - name: STORAGE_TYPE
+          enum: ['s3', 'gcs']
+    preconditions:
+      - sh: |
+          [ -f "/workspace/storage-env-files/{{ .ENV_FILE }}" ]
+        msg: "Storage env file '/workspace/storage-env-files/{{ .ENV_FILE }}' not found."
+    cmds:
+      - echo hihi {{ .STORAGE_TYPE }} {{ .ENV_FILE }}
+      - task: "{{ .STORAGE_TYPE }}:init"
+        vars:
+          ENV_FILE: '{{ .ENV_FILE }}'
+      - task: "{{ .STORAGE_TYPE }}:upload"
+        vars:
+          ENV_FILE: '{{ .ENV_FILE }}'
+      #     DB_TYPE: '{{ .DB_TYPE }}'
+      #     DB_ALIAS: '{{ .DB_ALIAS }}'
+      #     BACKUP_DIR: '{{ .BACKUP_DIR }}'
+      - task: "{{ .STORAGE_TYPE }}:clean"
+        vars:
+          ENV_FILE: '{{ .ENV_FILE }}'
+      #     DB_TYPE: '{{ .DB_TYPE }}'
+      #     DB_ALIAS: '{{ .DB_ALIAS }}'
+      #     RETENTION_DAYS: '{{ .RETENTION_DAYS }}'
+  
   upload:
-    # ignore_error: true
     vars:
       list_valid_types: "s3 gcs"
       _pretty_list_valid_types:
@@ -22,21 +50,7 @@ tasks:
           [[ "{{ .list_valid_types }}" =~ (^|[[:space:]]){{ .STORAGE_TYPE }}($|[[:space:]]) ]]
         msg: "Invalid value for `STORAGE_TYPE`: '{{ .STORAGE_TYPE }}'. Expected one of: {{ ._pretty_list_valid_types }}."
     cmds:
-      - task: "{{ .STORAGE_TYPE }}:init"
+      - task: _upload
         vars:
           ENV_FILE: '{{ .STORAGE_ENV_FILE }}'
-          DB_TYPE: '{{ .DB_TYPE }}'
-          DB_ALIAS: '{{ .DB_ALIAS }}'
-      - task: "{{ .STORAGE_TYPE }}:upload"
-        vars:
-          ENV_FILE: '{{ .STORAGE_ENV_FILE }}'
-          DB_TYPE: '{{ .DB_TYPE }}'
-          DB_ALIAS: '{{ .DB_ALIAS }}'
-          BACKUP_DIR: '{{ .BACKUP_DIR }}'
-      - task: "{{ .STORAGE_TYPE }}:clean"
-        vars:
-          ENV_FILE: '{{ .STORAGE_ENV_FILE }}'
-          DB_TYPE: '{{ .DB_TYPE }}'
-          DB_ALIAS: '{{ .DB_ALIAS }}'
-          RETENTION_DAYS: '{{ .RETENTION_DAYS }}'
-        
+          STORAGE_TYPE: '{{ .STORAGE_TYPE }}'
