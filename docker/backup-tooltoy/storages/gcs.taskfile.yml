@@ -5,17 +5,10 @@ tasks:
   init:
     requires:
       vars: 
-        - ENV_FILE
         - DB_TYPE
         - DB_ALIAS
-    dotenv:
-      - /workspace/storage-env-files/{{ .ENV_FILE }}
-    preconditions:
-      - sh: |
-          [[ -n "${GCS_BUCKET}" ]]
-        msg: "Required environment variables (GCS_BUCKET) are not set. Please check your .env file."
-    vars: &common_vars
-      GCS_BUCKET: '${GCS_BUCKET}'
+        - GCS_BUCKET
+    vars:
       GCS_SUBPATH: '{{ .DB_TYPE }}/{{ .DB_ALIAS }}'
     cmds:
       - |
@@ -27,26 +20,20 @@ tasks:
   upload:
     requires:
       vars: 
-        - ENV_FILE
         - BACKUP_DIR
         - DB_TYPE
         - DB_ALIAS
-    dotenv: 
-      - /workspace/storage-env-files/{{ .ENV_FILE }}
-    vars: *common_vars
+    vars:
+      GCS_SUBPATH: '{{ .DB_TYPE }}/{{ .DB_ALIAS }}'
     cmds: 
       - gcloud storage cp -r {{ .BACKUP_DIR }}/* gs://{{ .GCS_BUCKET }}/{{ .GCS_SUBPATH }}/$(basename {{ .BACKUP_DIR }})/
   clean:
     requries:
       vars: 
-        - ENV_FILE
         - DB_TYPE
         - DB_ALIAS
         - RETENTION_DAYS
-    dotenv: 
-      - /workspace/storage-env-files/{{ .ENV_FILE }}
     vars: 
-      GCS_BUCKET: '${GCS_BUCKET}'
       GCS_SUBPATH: '{{ .DB_TYPE }}/{{ .DB_ALIAS }}'
       DATE_THRESHOLD:
         sh: date --date='{{ .RETENTION_DAYS }} days ago' +'%Y-%m-%dT%H:%M:%S'

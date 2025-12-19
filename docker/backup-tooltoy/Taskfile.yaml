@@ -5,9 +5,6 @@ includes:
   databases:
     taskfile: "./databases/Taskfile.yml"
     internal: true
-  storages:
-    taskfile: "./storages/Taskfile.yml"
-    internal: true
 
 vars:
   BACKUP_ID:
@@ -18,7 +15,28 @@ vars:
   STORAGE_ENV_FILES: 
     sh: "ls {{ .STORAGE_ENV_DIR }}"
 
+env:
+  BACKUP_DIR: "{{ .BACKUP_DIR }}"
+  BACKUP_ID: "{{ .BACKUP_ID }}"
+
 tasks:
+  upload:
+    vars:
+      STORAGE_TYPE: '{{ mustRegexSplit "-" .STORAGE_ENV_FILE 2 | first }}'
+    requires:
+      vars:
+        - STORAGE_ENV_FILE
+    preconditions:
+      - sh: |
+          [ -f "/workspace/storage-env-files/{{ .STORAGE_ENV_FILE }}" ]
+        msg: "Storage env file '/workspace/storage-env-files/{{ .STORAGE_ENV_FILE }}' not found."
+    cmds:
+      - |
+        export ENV_FILE={{ .STORAGE_ENV_FILE }} 
+        export STORAGE_TYPE={{ .STORAGE_TYPE }}
+        
+        task -d /workspace/storages upload 
+
   run:
     requires:
       vars:
@@ -30,6 +48,6 @@ tasks:
       - task: "databases:{{ .DB_TYPE }}:backup"
       - for:
           var: STORAGE_ENV_FILES
-        task: storages:upload
+        task: upload
         vars:
           STORAGE_ENV_FILE: '{{ .ITEM }}'

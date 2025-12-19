@@ -4,53 +4,39 @@ includes:
   s3: ./s3.taskfile.yml
   gcs: ./gcs.taskfile.yml
 
+dotenv:
+  - /workspace/storage-env-files/{{ .ENV_FILE }}
+
 tasks:
   _upload:
     internal: true
-    requires:
-      vars:
-        - ENV_FILE
-        - name: STORAGE_TYPE
-          enum: ['s3', 'gcs']
-    preconditions:
-      - sh: |
-          [ -f "/workspace/storage-env-files/{{ .ENV_FILE }}" ]
-        msg: "Storage env file '/workspace/storage-env-files/{{ .ENV_FILE }}' not found."
+    dotenv:
+      - /workspace/storage-env-files/{{ .ENV_FILE }}
     cmds:
-      - echo hihi {{ .STORAGE_TYPE }} {{ .ENV_FILE }}
       - task: "{{ .STORAGE_TYPE }}:init"
         vars:
           ENV_FILE: '{{ .ENV_FILE }}'
       - task: "{{ .STORAGE_TYPE }}:upload"
         vars:
           ENV_FILE: '{{ .ENV_FILE }}'
-      #     DB_TYPE: '{{ .DB_TYPE }}'
-      #     DB_ALIAS: '{{ .DB_ALIAS }}'
-      #     BACKUP_DIR: '{{ .BACKUP_DIR }}'
       - task: "{{ .STORAGE_TYPE }}:clean"
         vars:
           ENV_FILE: '{{ .ENV_FILE }}'
-      #     DB_TYPE: '{{ .DB_TYPE }}'
-      #     DB_ALIAS: '{{ .DB_ALIAS }}'
-      #     RETENTION_DAYS: '{{ .RETENTION_DAYS }}'
   
+  _skip:
+    internal: true
+
   upload:
-    vars:
-      list_valid_types: "s3 gcs"
-      _pretty_list_valid_types:
-        sh: |
-          echo {{ .list_valid_types }} | sed "s/^/\'/; s/ /\', \'/g; s/$/\'/"
-      
-      STORAGE_TYPE: '{{ mustRegexSplit "-" .STORAGE_ENV_FILE 2 | first }}'
     requires:
       vars:
-        - STORAGE_ENV_FILE
+        - ENV_FILE
+        - name: STORAGE_TYPE
+          enum: ['s3', 'gcs']
+    vars:
+      IGNORE: '{{ .IGNORE | default "false" }}'
     preconditions:
       - sh: |
-          [[ "{{ .list_valid_types }}" =~ (^|[[:space:]]){{ .STORAGE_TYPE }}($|[[:space:]]) ]]
-        msg: "Invalid value for `STORAGE_TYPE`: '{{ .STORAGE_TYPE }}'. Expected one of: {{ ._pretty_list_valid_types }}."
+          [ "{{ .IGNORE }}" == "true" ] || [ "{{ .IGNORE }}" == "false" ]
+        msg: "IGNORE must be 'true' or 'false'. Got '{{ .IGNORE }}'."
     cmds:
-      - task: _upload
-        vars:
-          ENV_FILE: '{{ .STORAGE_ENV_FILE }}'
-          STORAGE_TYPE: '{{ .STORAGE_TYPE }}'
+      - task: '{{ if eq .IGNORE "true" }}_skip{{ else }}_upload{{ end }}'
