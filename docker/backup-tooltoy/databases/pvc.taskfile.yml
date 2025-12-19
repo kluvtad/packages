@@ -8,11 +8,11 @@ tasks:
         - BACKUP_DIR
         - KUBE_VOLUME_SNAPSHOT_CLASS
 
-        - KUBE_PVC_NAMESPACE
+        - KUBE_NAMESPACE
         - KUBE_PVC_NAME
     preconditions:
-      - sh: kubectl get pvc {{ .KUBE_PVC_NAME }} -n {{ .KUBE_PVC_NAMESPACE }}
-        msg: PVC '{{ .KUBE_PVC_NAME }}' not found in namespace '{{ .KUBE_PVC_NAMESPACE }}'.
+      - sh: kubectl get pvc {{ .KUBE_PVC_NAME }} -n {{ .KUBE_NAMESPACE }}
+        msg: PVC '{{ .KUBE_PVC_NAME }}' not found in namespace '{{ .KUBE_NAMESPACE }}'.
     vars:
       KUBE_VOLUME_SNAPSHOT_NAME: '{{ .KUBE_PVC_NAME }}-{{ .BACKUP_ID | replace "_" "-" }}'
     cmds: 
@@ -22,7 +22,7 @@ tasks:
         kind: VolumeSnapshot
         metadata:
           name: {{ .KUBE_VOLUME_SNAPSHOT_NAME }}
-          namespace: {{ .KUBE_PVC_NAMESPACE }}
+          namespace: {{ .KUBE_NAMESPACE }}
         spec:
           volumeSnapshotClassName: {{ .KUBE_VOLUME_SNAPSHOT_CLASS }}
           source:
@@ -34,7 +34,7 @@ tasks:
       # - defer: kubectl delete -f /tmp/vs.yaml
       # - |
       #   # Wait until the VolumeSnapshot is ready to use
-      #   until kubectl get volumesnapshot {{ .KUBE_VOLUME_SNAPSHOT_NAME }} -n {{ .KUBE_PVC_NAMESPACE }} -o jsonpath='{.status.readyToUse}' | grep true; do
+      #   until kubectl get volumesnapshot {{ .KUBE_VOLUME_SNAPSHOT_NAME }} -n {{ .KUBE_NAMESPACE }} -o jsonpath='{.status.readyToUse}' | grep true; do
       #     echo "Waiting for VolumeSnapshot to be ready..."
       #     sleep 10
       #   done
