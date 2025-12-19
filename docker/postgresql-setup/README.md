@@ -1,11 +1,16 @@
 ## Local dev
+0. RUn db
+```bash
+$ docker run -p 5432:5432 -e POSTGRES_DB=postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=ahihi123  postgres:17.4-bookworm
+```
+
 1. Create `.env`
 ```properties
 MASTER_PGHOST=localhost
 MASTER_PGPORT=5432
 MASTER_PGDATABASE=postgres
 MASTER_PGUSER=postgres
-MASTER_PGPASSWORD=...
+MASTER_PGPASSWORD=ahihi123
 ```
 2. Build docker
 ```bash

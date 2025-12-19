@@ -5,6 +5,19 @@
   
 - name: GRANT groups to {{ username  }}
   community.postgresql.postgresql_membership:
-    groups: "{{ user_config.groups | default([]) }}"
+    groups: "{{ user_config.groups | default([]) | map(attribute='name') | list}}"
     target_role: "{{ username }}"
     state: exact
+
+- name: GRANT groups to {{ username }} with ADMIN OPTION
+  community.postgresql.postgresql_privs:
+    login_db: "{{ MASTER_PGDATABASE }}"
+
+    type: group
+    objs: "{{ user_group.name }}"
+    roles: "{{ username }}"
+    admin_option: "{{ user_group.admin | default(false) }}"
+  loop: "{{ user_config.groups }}"
+  loop_control:
+    loop_var: user_group
+  when: user_config.groups is defined
