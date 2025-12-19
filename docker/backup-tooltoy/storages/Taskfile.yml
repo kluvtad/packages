@@ -26,6 +26,12 @@ tasks:
   _skip:
     internal: true
 
+  _nodata:
+    internal: true
+    cmds:
+      - |
+        >&2 echo -e "\033[1;33mWARN\033[0;93m - No data to upload in '{{ .BACKUP_DIR }}'. Skipping upload.\033[m"
+
   upload:
     requires:
       vars:
@@ -34,9 +40,16 @@ tasks:
           enum: ['s3', 'gcs']
     vars:
       IGNORE: '{{ .IGNORE | default "false" }}'
+      NO_DATA: 
+        sh: |
+          if [ -z "$(find {{ .BACKUP_DIR }}  -type f)" ]; then
+            echo "true"
+          else
+            echo "false"
+          fi
     preconditions:
       - sh: |
           [ "{{ .IGNORE }}" == "true" ] || [ "{{ .IGNORE }}" == "false" ]
         msg: "IGNORE must be 'true' or 'false'. Got '{{ .IGNORE }}'."
     cmds:
-      - task: '{{ if eq .IGNORE "true" }}_skip{{ else }}_upload{{ end }}'
+      - task: '{{ if eq .IGNORE "true" }}_skip{{ else if eq .NO_DATA "true" }}_nodata{{ else }}_upload{{ end }}'

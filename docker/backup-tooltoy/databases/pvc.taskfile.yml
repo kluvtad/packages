@@ -28,15 +28,15 @@ tasks:
           source:
             persistentVolumeClaimName: {{ .KUBE_PVC_NAME }}
         EOF
-      - defer: rm -f /tmp/vs.yaml
-      - |
-        kubectl apply -f /tmp/vs.yaml
-      - defer: kubectl delete -f /tmp/vs.yaml
-      - |
-        # Wait until the VolumeSnapshot is ready to use
-        until kubectl get volumesnapshot {{ .KUBE_VOLUME_SNAPSHOT_NAME }} -n {{ .KUBE_PVC_NAMESPACE }} -o jsonpath='{.status.readyToUse}' | grep true; do
-          echo "Waiting for VolumeSnapshot to be ready..."
-          sleep 10
-        done
-        echo "VolumeSnapshot is ready to use."
+      # - defer: rm -f /tmp/vs.yaml
+      # - |
+      #   kubectl apply -f /tmp/vs.yaml
+      # - defer: kubectl delete -f /tmp/vs.yaml
+      # - |
+      #   # Wait until the VolumeSnapshot is ready to use
+      #   until kubectl get volumesnapshot {{ .KUBE_VOLUME_SNAPSHOT_NAME }} -n {{ .KUBE_PVC_NAMESPACE }} -o jsonpath='{.status.readyToUse}' | grep true; do
+      #     echo "Waiting for VolumeSnapshot to be ready..."
+      #     sleep 10
+      #   done
+      #   echo "VolumeSnapshot is ready to use."
       - 
