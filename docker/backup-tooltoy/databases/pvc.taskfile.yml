@@ -1,21 +1,19 @@
 version: '3'
 
 tasks:
-  backup:
+  _createVolumeSnapshot:
+    internal: true
     requires:
       vars:
-        - BACKUP_ID
-        - BACKUP_DIR
         - KUBE_VOLUME_SNAPSHOT_CLASS
+        - KUBE_VOLUME_SNAPSHOT_NAME
 
         - KUBE_NAMESPACE
         - KUBE_PVC_NAME
     preconditions:
       - sh: kubectl get pvc {{ .KUBE_PVC_NAME }} -n {{ .KUBE_NAMESPACE }}
         msg: PVC '{{ .KUBE_PVC_NAME }}' not found in namespace '{{ .KUBE_NAMESPACE }}'.
-    vars:
-      KUBE_VOLUME_SNAPSHOT_NAME: '{{ .KUBE_PVC_NAME }}-{{ .BACKUP_ID | replace "_" "-" }}'
-    cmds: 
+    cmds:
       - |
         cat > /tmp/vs.yaml <<- "EOF"
         apiVersion: snapshot.storage.k8s.io/v1
@@ -28,15 +26,144 @@ tasks:
           source:
             persistentVolumeClaimName: {{ .KUBE_PVC_NAME }}
         EOF
-      # - defer: rm -f /tmp/vs.yaml
-      # - |
-      #   kubectl apply -f /tmp/vs.yaml
-      # - defer: kubectl delete -f /tmp/vs.yaml
-      # - |
-      #   # Wait until the VolumeSnapshot is ready to use
-      #   until kubectl get volumesnapshot {{ .KUBE_VOLUME_SNAPSHOT_NAME }} -n {{ .KUBE_NAMESPACE }} -o jsonpath='{.status.readyToUse}' | grep true; do
-      #     echo "Waiting for VolumeSnapshot to be ready..."
-      #     sleep 10
-      #   done
-      #   echo "VolumeSnapshot is ready to use."
-      - 
+      - defer: rm -f /tmp/vs.yaml
+      - |
+        kubectl apply -f /tmp/vs.yaml
+      - defer: kubectl delete -f /tmp/vs.yaml --wait=true
+      - |
+        # Wait until the VolumeSnapshot is ready to use
+        until kubectl get volumesnapshot {{ .KUBE_VOLUME_SNAPSHOT_NAME }} -n {{ .KUBE_NAMESPACE }} -o jsonpath='{.status.readyToUse}' | grep true; do
+          echo "Waiting for VolumeSnapshot to be ready..."
+          sleep 10
+        done
+        echo "VolumeSnapshot is ready to use."
+  _senderPod:
+    internal: true
+    requires:
+      vars: 
+        - MY_ADDRESS
+        
+        - KUBE_NAMESPACE
+        - KUBE_VOLUME_SNAPSHOT_NAME
+    cmds:
+      - |
+        kubectl -n {{ .KUBE_NAMESPACE }} get pvc {{ .KUBE_PVC_NAME }} -o yaml > /tmp/current-pvc.yaml
+      - defer: rm -f /tmp/current-pvc.yaml
+      - |
+        cat > /tmp/job.yaml <<- "EOF"
+        apiVersion: batch/v1
+        kind: Job
+        metadata:
+          name: {{ .KUBE_VOLUME_SNAPSHOT_NAME }}-sender
+          namespace: {{ .KUBE_NAMESPACE }}
+        spec:
+          ttlSecondsAfterFinished: 600
+          template:
+            spec:
+              containers:
+                - name: main
+                  image: alpine/curl:8.17.0
+                  volumeMounts:
+                    - mountPath: "/data"
+                      name: working-dir
+                    - mountPath: "/data/backup_dir"
+                      name: backup-data
+                  command: 
+                    - sh
+                    - -c
+                    - |
+                      tar -czf /data/backup.tar.gz /data/backup_dir
+                      
+                      for i in $(seq 1 30); do
+                        if curl -s --fail $RECEIVER_ADDRESS:8080/health; then
+                          echo "Receiver is ready."
+                          break
+                        fi
+
+                        echo "Receiver not ready, retrying in 10 seconds..."
+                        sleep 10
+                      done
+                      if [ $i -eq 30 ]; then
+                        echo "Receiver did not become ready in time."
+                        exit 1
+                      fi
+
+                      curl -X POST $RECEIVER_ADDRESS:8080/upload -F 'files=@/data/backup.tar.gz'
+                  env:
+                    - name: RECEIVER_ADDRESS
+                      value: "{{ .MY_ADDRESS }}"
+              restartPolicy: Never
+              volumes:
+                - name: backup-data
+                  ephemeral:
+                    volumeClaimTemplate:
+                      spec:
+                        dataSource:
+                          kind: VolumeSnapshot
+                          apiGroup: snapshot.storage.k8s.io
+                          name: {{ .KUBE_VOLUME_SNAPSHOT_NAME }}
+                        accessModes: null
+                        storageClassName: null  
+                        resources: null
+                - name: working-dir
+                  ephemeral:
+                    volumeClaimTemplate:
+                      spec:
+                        accessModes: null
+                        storageClassName: null  
+                        resources: null
+        EOF
+      - defer: rm -f /tmp/job.yaml
+      - |
+        # Update the pod volumes with pvc spec
+        yq eval '.spec.template.spec.volumes[0].ephemeral.volumeClaimTemplate.spec.accessModes = load("/tmp/current-pvc.yaml").spec.accessModes' -i /tmp/job.yaml
+        yq eval '.spec.template.spec.volumes[0].ephemeral.volumeClaimTemplate.spec.storageClassName = load("/tmp/current-pvc.yaml").spec.storageClassName' -i /tmp/job.yaml
+        yq eval '.spec.template.spec.volumes[0].ephemeral.volumeClaimTemplate.spec.resources = load("/tmp/current-pvc.yaml").spec.resources' -i /tmp/job.yaml
+
+        yq eval '.spec.template.spec.volumes[1].ephemeral.volumeClaimTemplate.spec.accessModes = load("/tmp/current-pvc.yaml").spec.accessModes' -i /tmp/job.yaml
+        yq eval '.spec.template.spec.volumes[1].ephemeral.volumeClaimTemplate.spec.storageClassName = load("/tmp/current-pvc.yaml").spec.storageClassName' -i /tmp/job.yaml
+        yq eval '.spec.template.spec.volumes[1].ephemeral.volumeClaimTemplate.spec.resources = load("/tmp/current-pvc.yaml").spec.resources' -i /tmp/job.yaml
+
+      - |
+        kubectl apply -f /tmp/job.yaml
+  _httpServerWaitUpload:
+    internal: true
+    cmds:
+      - |
+        
+      - |
+        echo "Waiting for upload to complete..."
+        until kubectl -n {{ .KUBE_NAMESPACE }} get job -o jsonpath='{.items[?(@.metadata.name=="{{ .KUBE_VOLUME_SNAPSHOT_NAME }}-sender")].status.succeeded}' | grep 1; do
+          echo "Upload in progress..."
+          sleep 15
+        done
+        echo "Upload completed successfully."
+  backup:
+    requires:
+      vars:
+        - BACKUP_ID
+        - BACKUP_DIR
+
+        - MY_ADDRESS
+
+        - KUBE_VOLUME_SNAPSHOT_CLASS
+
+        - KUBE_NAMESPACE
+        - KUBE_PVC_NAME
+    vars:
+      KUBE_VOLUME_SNAPSHOT_NAME: '{{ .KUBE_PVC_NAME }}-{{ .BACKUP_ID | replace "_" "-" }}'
+    cmds: 
+      - task: _createVolumeSnapshot
+        vars:
+          KUBE_VOLUME_SNAPSHOT_CLASS: '{{ .KUBE_VOLUME_SNAPSHOT_CLASS }}'
+          KUBE_VOLUME_SNAPSHOT_NAME: '{{ .KUBE_VOLUME_SNAPSHOT_NAME }}'
+          KUBE_NAMESPACE: '{{ .KUBE_NAMESPACE }}'
+          KUBE_PVC_NAME: '{{ .KUBE_PVC_NAME }}'
+      - task: _senderPod
+        vars:
+          MY_ADDRESS: '{{ .MY_ADDRESS }}'
+          KUBE_NAMESPACE: '{{ .KUBE_NAMESPACE }}'
+          KUBE_VOLUME_SNAPSHOT_NAME: '{{ .KUBE_VOLUME_SNAPSHOT_NAME }}'
+      - task: _httpServerWaitUpload
+
+      - sleep 3600 

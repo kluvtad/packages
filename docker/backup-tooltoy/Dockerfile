@@ -32,6 +32,9 @@ RUN apt update && apt-get install -y postgresql-client-17
 # https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
 RUN curl -Lo /usr/bin/kubectl "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && chmod +x /usr/bin/kubectl
 
+# yq
+RUN curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && chmod a+x /usr/local/bin/yq
+
 COPY . /workspace
 WORKDIR /workspace
 
