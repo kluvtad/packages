@@ -26,10 +26,8 @@ tasks:
           source:
             persistentVolumeClaimName: {{ .KUBE_PVC_NAME }}
         EOF
-      - defer: rm -f /tmp/vs.yaml
       - |
         kubectl apply -f /tmp/vs.yaml
-      - defer: kubectl delete -f /tmp/vs.yaml --wait=true
       - |
         # Wait until the VolumeSnapshot is ready to use
         until kubectl get volumesnapshot {{ .KUBE_VOLUME_SNAPSHOT_NAME }} -n {{ .KUBE_NAMESPACE }} -o jsonpath='{.status.readyToUse}' | grep true; do
@@ -37,6 +35,11 @@ tasks:
           sleep 10
         done
         echo "VolumeSnapshot is ready to use."
+  _createVolumeSnapshot:clean:
+    cmds:
+      - rm -f /tmp/vs.yaml
+      - kubectl delete -f /tmp/vs.yaml --wait=true
+
   _senderPod:
     internal: true
     requires:
@@ -48,7 +51,6 @@ tasks:
     cmds:
       - |
         kubectl -n {{ .KUBE_NAMESPACE }} get pvc {{ .KUBE_PVC_NAME }} -o yaml > /tmp/current-pvc.yaml
-      - defer: rm -f /tmp/current-pvc.yaml
       - |
         cat > /tmp/job.yaml <<- "EOF"
         apiVersion: batch/v1
@@ -113,7 +115,6 @@ tasks:
                         storageClassName: null  
                         resources: null
         EOF
-      - defer: rm -f /tmp/job.yaml
       - |
         # Update the pod volumes with pvc spec
         yq eval '.spec.template.spec.volumes[0].ephemeral.volumeClaimTemplate.spec.accessModes = load("/tmp/current-pvc.yaml").spec.accessModes' -i /tmp/job.yaml
@@ -126,6 +127,12 @@ tasks:
 
       - |
         kubectl apply -f /tmp/job.yaml
+  
+  _senderPod:clean:
+    cmds: 
+      - rm -f /tmp/current-pvc.yaml
+      - rm -f /tmp/job.yaml
+  
   _httpServerWaitUpload:
     internal: true
     cmds:
@@ -159,11 +166,16 @@ tasks:
           KUBE_VOLUME_SNAPSHOT_NAME: '{{ .KUBE_VOLUME_SNAPSHOT_NAME }}'
           KUBE_NAMESPACE: '{{ .KUBE_NAMESPACE }}'
           KUBE_PVC_NAME: '{{ .KUBE_PVC_NAME }}'
+      - defer:
+          task: _createVolumeSnapshot:clean
       - task: _senderPod
         vars:
           MY_ADDRESS: '{{ .MY_ADDRESS }}'
           KUBE_NAMESPACE: '{{ .KUBE_NAMESPACE }}'
           KUBE_VOLUME_SNAPSHOT_NAME: '{{ .KUBE_VOLUME_SNAPSHOT_NAME }}'
+      - defer:
+          task: _senderPod:clean
+
       - task: _httpServerWaitUpload
 
       - sleep 3600 
