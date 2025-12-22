@@ -12,7 +12,7 @@ services:
       - |
         cp -r /tmp/.kube /root/.kube
         
-        mkdir /root/.config
+        rm -rf /root/.config/gcloud
         cp -r /tmp/gcloud /root/.config/gcloud
         
         if [ -n "$KUBECONTEXT" ]; then

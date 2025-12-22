@@ -9,7 +9,7 @@ includes:
 vars:
   BACKUP_ID:
     sh: |
-      echo $(date '+%y-%m-%dt%H-%M-%Sz')_$(openssl rand -hex 5)
+      echo $(date '+%y-%m-%dt%H-%M-%Sz')_$(tr -dc a-z0-9 </dev/urandom | head -c 5; echo)
   BACKUP_DIR: "/data/{{ .BACKUP_ID }}"
   STORAGE_ENV_DIR: "/workspace/storage-env-files"
   STORAGE_ENV_FILES: 
