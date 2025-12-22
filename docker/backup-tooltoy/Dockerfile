@@ -2,6 +2,12 @@ FROM alpine:3.23.2
 
 RUN apk add --no-cache curl python3 py3-pip bash
 
+# Python venv
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+COPY ./requirements.txt /requirements.txt
+RUN pip install --no-cache-dir -r /requirements.txt
+
 # Taskfile
 # TASK_X_ENV_PRECEDENCE=1 - https://taskfile.dev/experiments/env-precedence
 ENV TASK_X_ENV_PRECEDENCE=1
