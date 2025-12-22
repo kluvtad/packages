@@ -37,8 +37,8 @@ tasks:
         echo "VolumeSnapshot is ready to use."
   _createVolumeSnapshot:clean:
     cmds:
-      - rm -f /tmp/vs.yaml
       - kubectl delete -f /tmp/vs.yaml --wait=true
+      - rm -f /tmp/vs.yaml
 
   _senderPod:
     internal: true
