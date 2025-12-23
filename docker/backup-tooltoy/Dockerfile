@@ -1,6 +1,6 @@
 FROM alpine:3.23.2
 
-RUN apk add --no-cache curl python3 py3-pip bash
+RUN apk add --no-cache curl python3 py3-pip bash coreutils
 
 # Python venv
 RUN python3 -m venv /opt/venv
