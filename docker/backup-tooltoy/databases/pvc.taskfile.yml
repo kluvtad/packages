@@ -11,8 +11,7 @@ tasks:
         - KUBE_NAMESPACE
         - KUBE_PVC_NAME
     preconditions:
-      - sh: kubectl get pvc {{ .KUBE_PVC_NAME }} -n {{ .KUBE_NAMESPACE }}
-        msg: PVC '{{ .KUBE_PVC_NAME }}' not found in namespace '{{ .KUBE_NAMESPACE }}'.
+      - kubectl get pvc {{ .KUBE_PVC_NAME }} -n {{ .KUBE_NAMESPACE }}
     cmds:
       - |
         cat > /tmp/vs.yaml <<- "EOF"
