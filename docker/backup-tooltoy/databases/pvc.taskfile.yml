@@ -191,4 +191,6 @@ tasks:
           KUBE_NAMESPACE: '{{ .KUBE_NAMESPACE }}'
           KUBE_VOLUME_SNAPSHOT_NAME: '{{ .KUBE_VOLUME_SNAPSHOT_NAME }}'
 
-      - md5sum -c {{ .BACKUP_DIR }}/md5sum.txt
+      - |
+        cd {{ .BACKUP_DIR }}
+        md5sum -c {{ .BACKUP_DIR }}/md5sum.txt
