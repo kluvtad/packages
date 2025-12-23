@@ -74,7 +74,7 @@ tasks:
                     - -c
                     - |
                       tar -czf /data/backup.tar.gz /data/backup_dir
-                      md5sum /data/backup.tar.gz > /data/md5sum.txt
+                      (cd /data && md5sum ./backup.tar.gz > ./md5sum.txt)
                       
                       for i in $(seq 1 30); do
                         if curl -s --fail $RECEIVER_ADDRESS:8080/health; then
