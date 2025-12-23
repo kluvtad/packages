@@ -4,39 +4,52 @@ includes:
   s3: ./s3.taskfile.yml
   gcs: ./gcs.taskfile.yml
 
+dotenv:
+  - /workspace/storage-env-files/{{ .ENV_FILE }}
+
 tasks:
-  upload:
-    # ignore_error: true
-    vars:
-      list_valid_types: "s3 gcs"
-      _pretty_list_valid_types:
-        sh: |
-          echo {{ .list_valid_types }} | sed "s/^/\'/; s/ /\', \'/g; s/$/\'/"
-      
-      STORAGE_TYPE: '{{ mustRegexSplit "-" .STORAGE_ENV_FILE 2 | first }}'
-    requires:
-      vars:
-        - STORAGE_ENV_FILE
-    preconditions:
-      - sh: |
-          [[ "{{ .list_valid_types }}" =~ (^|[[:space:]]){{ .STORAGE_TYPE }}($|[[:space:]]) ]]
-        msg: "Invalid value for `STORAGE_TYPE`: '{{ .STORAGE_TYPE }}'. Expected one of: {{ ._pretty_list_valid_types }}."
+  _upload:
+    internal: true
+    dotenv:
+      - /workspace/storage-env-files/{{ .ENV_FILE }}
     cmds:
       - task: "{{ .STORAGE_TYPE }}:init"
         vars:
-          ENV_FILE: '{{ .STORAGE_ENV_FILE }}'
-          DB_TYPE: '{{ .DB_TYPE }}'
-          DB_ALIAS: '{{ .DB_ALIAS }}'
+          ENV_FILE: '{{ .ENV_FILE }}'
       - task: "{{ .STORAGE_TYPE }}:upload"
         vars:
-          ENV_FILE: '{{ .STORAGE_ENV_FILE }}'
-          DB_TYPE: '{{ .DB_TYPE }}'
-          DB_ALIAS: '{{ .DB_ALIAS }}'
-          BACKUP_DIR: '{{ .BACKUP_DIR }}'
+          ENV_FILE: '{{ .ENV_FILE }}'
       - task: "{{ .STORAGE_TYPE }}:clean"
         vars:
-          ENV_FILE: '{{ .STORAGE_ENV_FILE }}'
-          DB_TYPE: '{{ .DB_TYPE }}'
-          DB_ALIAS: '{{ .DB_ALIAS }}'
-          RETENTION_DAYS: '{{ .RETENTION_DAYS }}'
-        
+          ENV_FILE: '{{ .ENV_FILE }}'
+  
+  _skip:
+    internal: true
+
+  _nodata:
+    internal: true
+    cmds:
+      - |
+        >&2 echo -e "\033[1;33mWARN\033[0;93m - No data to upload in '{{ .BACKUP_DIR }}'. Skipping upload.\033[m"
+
+  upload:
+    requires:
+      vars:
+        - ENV_FILE
+        - name: STORAGE_TYPE
+          enum: ['s3', 'gcs']
+    vars:
+      IGNORE: '{{ .IGNORE | default "false" }}'
+      NO_DATA: 
+        sh: |
+          if [ -z "$(find {{ .BACKUP_DIR }}  -type f)" ]; then
+            echo "true"
+          else
+            echo "false"
+          fi
+    preconditions:
+      - sh: |
+          [ "{{ .IGNORE }}" == "true" ] || [ "{{ .IGNORE }}" == "false" ]
+        msg: "IGNORE must be 'true' or 'false'. Got '{{ .IGNORE }}'."
+    cmds:
+      - task: '{{ if eq .IGNORE "true" }}_skip{{ else if eq .NO_DATA "true" }}_nodata{{ else }}_upload{{ end }}'

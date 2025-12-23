@@ -5,40 +5,49 @@ includes:
   databases:
     taskfile: "./databases/Taskfile.yml"
     internal: true
-  storages:
-    taskfile: "./storages/Taskfile.yml"
-    internal: true
 
 vars:
   BACKUP_ID:
     sh: |
-      echo $(date '+%y-%m-%dt%H-%M-%Sz')_$(openssl rand -hex 5)
+      echo $(date '+%y-%m-%dt%H-%M-%Sz')_$(tr -dc a-z0-9 </dev/urandom | head -c 5; echo)
   BACKUP_DIR: "/data/{{ .BACKUP_ID }}"
   STORAGE_ENV_DIR: "/workspace/storage-env-files"
+  STORAGE_ENV_FILES: 
+    sh: "ls {{ .STORAGE_ENV_DIR }}"
+
+env:
+  BACKUP_DIR: "{{ .BACKUP_DIR }}"
+  BACKUP_ID: "{{ .BACKUP_ID }}"
 
 tasks:
-  run:
+  upload:
     vars:
-      list_valid_types: "postgresql edgedb kvrocks sealedSecrets"
-      _pretty_list_valid_types:
-        sh: |
-          echo {{ .list_valid_types }} | sed "s/^/\'/; s/ /\', \'/g; s/$/\'/"
-      list_storage_env_files:
-        sh: "ls {{ .STORAGE_ENV_DIR }}"
-          
+      STORAGE_TYPE: '{{ mustRegexSplit "-" .STORAGE_ENV_FILE 2 | first }}'
     requires:
       vars:
-        - DB_TYPE
+        - STORAGE_ENV_FILE
     preconditions:
       - sh: |
-          [[ "{{ .list_valid_types }}" =~ (^|[[:space:]]){{ .DB_TYPE }}($|[[:space:]]) ]]
-        msg: "Invalid value for `DB_TYPE`: '{{ .DB_TYPE }}'. Expected one of: {{ ._pretty_list_valid_types }}."
+          [ -f "/workspace/storage-env-files/{{ .STORAGE_ENV_FILE }}" ]
+        msg: "Storage env file '/workspace/storage-env-files/{{ .STORAGE_ENV_FILE }}' not found."
+    cmds:
+      - |
+        export ENV_FILE={{ .STORAGE_ENV_FILE }} 
+        export STORAGE_TYPE={{ .STORAGE_TYPE }}
+        
+        task -d /workspace/storages upload 
+
+  run:
+    requires:
+      vars:
+        - name: DB_TYPE
+          enum: ['postgresql', 'sealedSecrets', 'pvc']
     cmds:
       - mkdir -p {{ .BACKUP_DIR }}
       - defer: rm -rf {{ .BACKUP_DIR }}
       - task: "databases:{{ .DB_TYPE }}:backup"
       - for:
-          var: list_storage_env_files
-        task: storages:upload
+          var: STORAGE_ENV_FILES
+        task: upload
         vars:
           STORAGE_ENV_FILE: '{{ .ITEM }}'
